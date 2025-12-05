@@ -103,7 +103,7 @@ function renderGrid() {
                             const domain = getDomain(subLink.url);
                             if (domain) {
                                 const img = document.createElement('img');
-                                img.src = `https://cdn.brandfetch.io/${domain}?c=1idMkDQhG_dtotScqNn`;
+                                img.src = `https://cdn.brandfetch.io/${domain}/fallback/lettermark/icon?c=1idMkDQhG_dtotScqNn`;
                                 img.className = 'link-icon';
                                 img.alt = '';
                                 img.onerror = () => { img.style.display = 'none'; }; // Hide if failed
@@ -153,7 +153,7 @@ function renderGrid() {
                     const domain = getDomain(link.url);
                     if (domain) {
                         const img = document.createElement('img');
-                        img.src = `https://cdn.brandfetch.io/${domain}?c=1idMkDQhG_dtotScqNn`;
+                        img.src = `https://cdn.brandfetch.io/${domain}/fallback/lettermark/icon?c=1idMkDQhG_dtotScqNn`;
                         img.className = 'link-icon';
                         img.alt = '';
                         img.onerror = () => { img.style.display = 'none'; }; // Hide if failed
