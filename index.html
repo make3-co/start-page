@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start Page</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div id="clock" class="clock">00:00:00</div>
+        <div id="weather" class="weather">Loading weather...</div>
+        <div class="settings-controls">
+            <button id="edit-mode-btn" title="Toggle Edit Mode"><i class="fas fa-edit"></i></button>
+            <button id="settings-btn" title="Settings"><i class="fas fa-cog"></i> Settings</button>
+        </div>
+    </header>
+
+    <main id="grid-container" class="grid-container">
+        <!-- Groups will be rendered here -->
+    </main>
+
+    <!-- Add Group Modal -->
+    <div id="add-group-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Add New Group</h3>
+            <input type="text" id="new-group-name" placeholder="Group Name">
+            <div class="modal-actions">
+                <button id="cancel-add-group">Cancel</button>
+                <button id="confirm-add-group" class="primary-btn">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Group Modal (Replaces Edit Link Modal) -->
+    <div id="edit-group-modal" class="modal hidden">
+        <div class="modal-content wide">
+            <h3 id="group-modal-title">Edit Group</h3>
+            <input type="text" id="edit-group-title" placeholder="Group Title" style="font-weight: bold; font-size: 1.1em;">
+            
+            <div id="group-links-container">
+                <!-- Link rows will be added here dynamically -->
+            </div>
+
+            <button id="add-link-row-btn" class="add-link-row-btn"><i class="fas fa-plus"></i> Add Link</button>
+
+            <div class="modal-actions">
+                <button id="cancel-group-edit">Cancel</button>
+                <button id="delete-group-full" class="danger-btn">Delete Group</button>
+                <button id="save-group-edit" class="primary-btn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Settings Modal (JSON Import/Export) -->
+    <div id="settings-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Settings</h3>
+            <p>Edit your configuration JSON directly or export/import.</p>
+            <textarea id="config-json" rows="10"></textarea>
+            <div class="modal-actions">
+                <button id="close-settings">Close</button>
+                <button id="save-settings" class="primary-btn">Save & Reload</button>
+                <button id="reset-defaults" class="danger-btn">Reset to Defaults</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

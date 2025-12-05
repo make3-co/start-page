@@ -1,0 +1,274 @@
+:root {
+    --primary-color: #2c82c9; /* Blue from the image */
+    --bg-color: #f0f0f0;
+    --card-bg: #ffffff;
+    --text-color: #333;
+    --header-text: #fff;
+    --shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #e5e5e5;
+    background-image: repeating-linear-gradient(
+        45deg,
+        #e5e5e5,
+        #e5e5e5 10px,
+        #f5f5f5 10px,
+        #f5f5f5 20px
+    );
+    color: var(--text-color);
+}
+
+header {
+    background-color: #fff;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.clock {
+    font-size: 1.2em;
+    color: #666;
+}
+
+.weather {
+    font-size: 1em;
+    color: #666;
+}
+
+.settings-controls button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1em;
+    color: #666;
+    margin-left: 10px;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.card {
+    background: var(--card-bg);
+    border-radius: 4px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-header {
+    background-color: var(--primary-color);
+    color: var(--header-text);
+    padding: 10px 15px;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-body {
+    padding: 10px;
+    flex-grow: 1;
+}
+
+.link-item {
+    display: block;
+    padding: 8px 10px;
+    margin-bottom: 5px;
+    border: 1px solid #eee;
+    border-radius: 3px;
+    text-decoration: none;
+    color: var(--text-color);
+    font-size: 0.9em;
+    transition: background-color 0.2s;
+    text-align: center;
+    position: relative;
+}
+
+.link-item:hover {
+    background-color: #f9f9f9;
+    border-color: #ddd;
+}
+
+.link-item i {
+    margin-right: 5px;
+}
+
+/* Edit Mode Styles */
+body.edit-mode .link-item {
+    /* border: 1px dashed #999; */ /* Removed individual edit style */
+}
+
+/* Header Actions */
+.header-actions {
+    display: none; /* Hidden by default */
+    gap: 10px;
+}
+
+body.edit-mode .header-actions {
+    display: flex;
+}
+
+.header-btn {
+    cursor: pointer;
+    color: rgba(255,255,255,0.7);
+    transition: color 0.2s;
+}
+
+.header-btn:hover {
+    color: #fff;
+}
+
+/* Modals */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Wide modal for group editor */
+.modal-content.wide {
+    width: 700px;
+}
+
+.modal-content input,
+.modal-content textarea {
+    width: 100%;
+    padding: 8px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.modal-actions button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    background: #eee;
+}
+
+.modal-actions button.primary-btn {
+    background: var(--primary-color);
+    color: white;
+}
+
+.danger-btn {
+    background: #e74c3c !important;
+    color: white !important;
+}
+
+/* Edit Group Modal Specifics */
+.link-edit-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: #f9f9f9;
+    padding: 10px;
+    border: 1px solid #eee;
+    margin-bottom: 10px;
+    border-radius: 3px;
+}
+
+.link-edit-row input {
+    margin: 0; /* Reset margin for flex items */
+}
+
+.link-edit-row .link-name {
+    flex: 1;
+}
+
+.link-edit-row .link-url {
+    flex: 2;
+}
+
+.link-edit-row .remove-link-btn {
+    color: #e74c3c;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.add-link-row-btn {
+    width: 100%;
+    padding: 10px;
+    background: #f0f0f0;
+    border: 1px dashed #ccc;
+    cursor: pointer;
+    margin-top: 10px;
+    border-radius: 3px;
+    color: #666;
+}
+
+.add-link-row-btn:hover {
+    background: #e5e5e5;
+}
+
+/* Add Group Button (Floating or at end of grid) */
+.add-group-card {
+    border: 2px dashed #ccc;
+    background: transparent;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+    cursor: pointer;
+    color: #999;
+    font-size: 3em;
+}
+
+body.edit-mode .add-group-card {
+    display: flex;
+}
+
+.add-group-card:hover {
+    border-color: #999;
+    color: #666;
+}
