@@ -69,10 +69,11 @@ header {
     background: var(--card-bg);
     border-radius: 4px;
     box-shadow: var(--shadow);
-    overflow: hidden;
+    overflow: visible; /* Allow popups to overflow */
     display: flex;
     flex-direction: column;
     transition: transform 0.2s, box-shadow 0.2s;
+    position: relative; /* Context for z-index */
 }
 
 .card.dragging {
@@ -91,6 +92,7 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-radius: 4px 4px 0 0;
 }
 
 /* Adjust header content layout */
@@ -346,7 +348,8 @@ body.edit-mode .add-group-card {
     margin-bottom: 5px;
     border: 1px solid #eee;
     border-radius: 3px;
-    overflow: hidden;
+    overflow: visible; /* Allow absolute children to show */
+    position: relative; /* Anchor for absolute dropdown */
 }
 
 .list-header {
@@ -359,6 +362,8 @@ body.edit-mode .add-group-card {
     align-items: center;
     color: #333;
     user-select: none;
+    position: relative; /* Ensure it stays above list items if needed */
+    z-index: 2;
 }
 
 .list-header:hover {
@@ -375,8 +380,15 @@ body.edit-mode .add-group-card {
 
 .list-items {
     display: none;
+    position: absolute; /* Pop up behavior */
+    top: 100%;
+    left: -1px; /* Align with border */
+    width: calc(100% + 2px); /* align with container border */
+    z-index: 100;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
     background-color: #fff;
-    border-top: 1px solid #eee;
+    border: 1px solid #ccc;
+    border-radius: 0 0 3px 3px;
 }
 
 .list-items.open {
@@ -387,8 +399,13 @@ body.edit-mode .add-group-card {
     margin-bottom: 0;
     border: none;
     border-bottom: 1px solid #eee;
-    padding-left: 20px; /* Indent sub-items */
-    background-color: #fdfdfd;
+    padding-left: 15px;
+    background-color: #fff;
+    text-align: left; /* Better for menus */
+}
+
+.list-items .link-item:hover {
+    background-color: #f5f5f5;
 }
 
 .list-items .link-item:last-child {

@@ -94,8 +94,19 @@ function renderGrid() {
                     }
                     
                     listHeader.addEventListener('click', () => {
-                        listItems.classList.toggle('open');
+                        const isOpen = listItems.classList.toggle('open');
                         listHeader.classList.toggle('open');
+                        
+                        // Handle stacking context for popup
+                        if (isOpen) {
+                            card.style.zIndex = '100';
+                        } else {
+                            // Check if any other list in this card is open
+                            const openLists = card.querySelectorAll('.list-items.open');
+                            if (openLists.length === 0) {
+                                card.style.zIndex = '';
+                            }
+                        }
                     });
                     
                     listContainer.appendChild(listHeader);
