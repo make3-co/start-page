@@ -4,7 +4,7 @@ let appData = JSON.parse(localStorage.getItem('startPageData')) || defaultData;
 // Elements
 const gridContainer = document.getElementById('grid-container');
 const clockEl = document.getElementById('clock');
-const dateEl = document.getElementById('date-display'); // New element
+const dateEl = document.getElementById('date-display');
 const weatherEl = document.getElementById('weather');
 const editModeBtn = document.getElementById('edit-mode-btn');
 const settingsBtn = document.getElementById('settings-btn');
@@ -25,6 +25,15 @@ function init() {
     startClock();
     fetchWeather();
     setupEventListeners();
+}
+
+// Helper to extract domain for Brandfetch
+function getDomain(url) {
+    try {
+        return new URL(url).hostname;
+    } catch (e) {
+        return null;
+    }
 }
 
 // --- Rendering ---
@@ -87,9 +96,24 @@ function renderGrid() {
                             const a = document.createElement('a');
                             a.className = 'link-item';
                             a.href = isEditMode ? '#' : subLink.url;
-                            a.textContent = subLink.name;
                             a.target = "_blank";
                             if (isEditMode) a.addEventListener('click', (e) => e.preventDefault());
+
+                            // Icon logic
+                            const domain = getDomain(subLink.url);
+                            if (domain) {
+                                const img = document.createElement('img');
+                                img.src = `https://cdn.brandfetch.io/${domain}?c=1idMkDQhG_dtotScqNn`;
+                                img.className = 'link-icon';
+                                img.alt = '';
+                                img.onerror = () => { img.style.display = 'none'; }; // Hide if failed
+                                a.appendChild(img);
+                            }
+
+                            const span = document.createElement('span');
+                            span.textContent = subLink.name;
+                            a.appendChild(span);
+
                             listItems.appendChild(a);
                         });
                     }
@@ -119,12 +143,26 @@ function renderGrid() {
                     const a = document.createElement('a');
                     a.className = 'link-item';
                     a.href = isEditMode ? '#' : link.url;
-                    a.textContent = link.name;
                     a.target = "_blank"; 
                     
                     if (isEditMode) {
                         a.addEventListener('click', (e) => e.preventDefault());
                     }
+
+                    // Icon logic
+                    const domain = getDomain(link.url);
+                    if (domain) {
+                        const img = document.createElement('img');
+                        img.src = `https://cdn.brandfetch.io/${domain}?c=1idMkDQhG_dtotScqNn`;
+                        img.className = 'link-icon';
+                        img.alt = '';
+                        img.onerror = () => { img.style.display = 'none'; }; // Hide if failed
+                        a.appendChild(img);
+                    }
+
+                    const span = document.createElement('span');
+                    span.textContent = link.name;
+                    a.appendChild(span);
 
                     body.appendChild(a);
                 }
@@ -223,10 +261,8 @@ function toggleEditMode() {
 function startClock() {
     function update() {
         const now = new Date();
-        // Clock: 12:00 PM
         clockEl.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         
-        // Date: Thursday, December 4
         const dateStr = now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
         if (dateEl) dateEl.textContent = dateStr;
     }
@@ -252,7 +288,6 @@ async function getWeather(lat, lon) {
     try {
         const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=fahrenheit`);
         const data = await res.json();
-        // Format: Icon + Temp + Unit (e.g., "72°F")
         weatherEl.innerHTML = `<i class="fas fa-cloud-sun"></i> <span>${Math.round(data.current_weather.temperature)}°F</span>`;
     } catch (e) {
         weatherEl.textContent = "Weather Unavailable";
@@ -671,7 +706,7 @@ function setupEventListeners() {
     });
 }
 
-// Search handling (Visual Only for now as requested by "vibe")
+// Search handling
 const searchInput = document.getElementById('search-input');
 if(searchInput) {
     searchInput.addEventListener('keypress', (e) => {

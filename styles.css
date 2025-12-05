@@ -248,12 +248,21 @@ body.edit-mode .group-handle {
     font-weight: 400;
     transition: all 0.2s;
     border: 1px solid transparent;
+    gap: 12px;
 }
 
 .link-item:hover {
     background-color: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(5px);
     transform: translateX(5px);
+}
+
+.link-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    border-radius: 4px;
+    flex-shrink: 0;
 }
 
 /* Header Actions */
@@ -518,6 +527,29 @@ body.edit-mode .add-group-card {
     background: #e5e7eb;
     border-color: var(--primary-color);
     color: var(--primary-color);
+}
+
+/* Helper class for children being moved with their parent list */
+.link-edit-row.dragging-child {
+    opacity: 0.7;
+    background-color: #f0f8ff;
+    pointer-events: none; /* Ensure they don't interfere with drag events */
+    transition: none; /* Snap with parent */
+}
+
+/* Visual feedback when dragging over a list to nest inside it */
+.link-edit-row.drag-over-list {
+    border: 2px dashed #2c82c9;
+    background-color: #e6f7ff;
+}
+
+/* Visual feedback for inserting before/after */
+.link-edit-row.drag-over-top {
+    border-top: 2px solid #2c82c9;
+}
+
+.link-edit-row.drag-over-bottom {
+    border-bottom: 2px solid #2c82c9;
 }
 
 /* Media Queries for Responsiveness */
