@@ -68,6 +68,14 @@
             <h3>Edit Group</h3>
             <input type="text" id="edit-group-title" placeholder="Group Title">
             
+            <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                <label class="checkbox-label" style="display: flex; align-items: center; font-size: 0.9em; user-select: none; cursor: pointer;">
+                    <input type="checkbox" id="edit-group-branded" style="width: auto; margin-right: 8px;">
+                    Branded Group
+                </label>
+                <input type="text" id="edit-group-brand-url" placeholder="Brand Domain (e.g. facebook.com)" style="flex: 1; display: none; margin-bottom: 0;">
+            </div>
+
             <div id="group-links-container">
                 <!-- Links rows injected by JS -->
             </div>

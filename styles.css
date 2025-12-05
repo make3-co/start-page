@@ -343,6 +343,50 @@ header {
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid var(--border-color);
+    border-radius: 16px 16px 0 0; /* Rounded top corners */
+}
+
+.card-header.branded {
+    /* Branded headers might need to be taller if we want a big banner */
+    min-height: 100px; /* Increased for better banner visibility */
+    position: relative;
+    align-items: flex-start; /* Align controls to top */
+    padding-top: 10px;
+}
+
+.branded-icon-wrapper {
+    position: absolute;
+    bottom: -20px;
+    left: 15px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid var(--card-bg); /* Cutout effect matching card bg */
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.branded-icon-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.branded-title-text {
+    /* If we want text below banner? */
+    /* Or if we just use icon. */
+    /* For now, user wants icon. */
+    display: none;
+}
+
+/* Adjust body padding if branded icon is overlapping */
+.card.has-branded-header .card-body {
+    padding-top: 25px; /* Make space for the overlapping icon */
 }
 
 /* Group Handle */

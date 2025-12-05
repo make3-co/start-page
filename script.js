@@ -66,6 +66,7 @@ const settingsModal = document.getElementById('settings-modal');
 // State
 let isEditMode = false;
 let currentEditGroupId = null;
+const BRANDFETCH_API_KEY = 'ztR49sGepTKGna_5cJkmmg3bCoHgX8SwntrR1cuWhOZH6rjbnIBSzP5QVa2DhwQE9lWk7nVd86jsw0LUBHjKnA';
 
 // --- Initialization ---
 function init() {
@@ -116,6 +117,33 @@ function ensureProtocol(url) {
     return url;
 }
 
+// Helper to apply brand styling
+function applyBrandStyling(headerElement, brandData) {
+    // 1. Banner Image
+    const banner = brandData.images ? brandData.images.find(img => img.type === 'banner') : null;
+    
+    if (banner && banner.formats && banner.formats.length > 0) {
+        headerElement.style.backgroundImage = `url('${banner.formats[0].src}')`;
+        headerElement.style.backgroundSize = 'cover';
+        headerElement.style.backgroundPosition = 'center';
+        headerElement.style.color = '#fff'; // Assume dark banner
+        headerElement.classList.add('branded'); // Add branded class
+    } else {
+        // 2. Brand Color (Accent)
+        const accent = brandData.colors ? brandData.colors.find(c => c.type === 'accent') : null;
+        if (accent) {
+            headerElement.style.backgroundColor = accent.hex;
+            headerElement.classList.add('branded'); // Add branded class
+            
+            if (accent.brightness < 150) {
+                headerElement.style.color = '#fff';
+            } else {
+                headerElement.style.color = '#000';
+            }
+        }
+    }
+}
+
 // Helper to extract domain for Brandfetch
 function getDomain(url) {
     try {
@@ -135,18 +163,66 @@ function renderGrid() {
         card.dataset.groupId = group.id;
         card.draggable = false; // Default false
 
-        const header = document.createElement('div');
+    const header = document.createElement('div');
         header.className = 'card-header';
         
+        // Brand Styling
+        if (group.branded && group.brandData) {
+            applyBrandStyling(header, group.brandData);
+        }
+
         // Header HTML
+        let titleContent = `<span class="group-title">${group.title}</span>`;
+        let brandIconHtml = '';
+        let additionalCardClass = '';
+
+        if (group.branded && group.brandData) {
+            additionalCardClass = 'has-branded-header';
+            
+            // 1. Find suitable icon for the circular overlapping avatar (Icon type preferably)
+            let iconObj = group.brandData.logos ? group.brandData.logos.find(l => l.type === 'icon') : null;
+            // Fallback to any logo if icon not found
+            if (!iconObj && group.brandData.logos) iconObj = group.brandData.logos[0];
+            
+            if (iconObj && iconObj.formats && iconObj.formats.length > 0) {
+                brandIconHtml = `
+                    <div class="branded-icon-wrapper">
+                        <img src="${iconObj.formats[0].src}" alt="${group.title}">
+                    </div>
+                `;
+            }
+            
+            // 2. For the title text inside the banner/header
+            // If we have a banner, maybe we hide the title text or make it white?
+            // applyBrandStyling handles text color.
+            // The user's screenshot shows "Business Manager Kworq" (List items) below.
+            // The header itself (Banner) seems to have NO text in the Playground screenshot 1 & 2?
+            // Actually, Playground Image 1 & 2 has "Google" / "Facebook" text BELOW the banner, next to the icon.
+            
+            // Let's keep the title in the header for now but maybe hide it if it clashes?
+            // Or if we want to strictly follow playground: 
+            // The title should be in the card body or below header.
+            // But we need the handle and edit button in the header.
+            
+            // Let's just remove the text from the header if branded, assuming the Icon is enough?
+            // Or keep it? In the screenshot 3 (User's result?), there is no text in the header, just the icon.
+            // But wait, the user said "the icon needs work".
+            
+            // Decision: Hide title text in header if branded, as the Icon + Banner is the "Title".
+            titleContent = ''; 
+        }
+
+        if (additionalCardClass) card.classList.add(additionalCardClass);
+
         header.innerHTML = `
             <div class="header-content">
                 <i class="fas fa-grip-horizontal handle group-handle" title="Drag to reorder group"></i>
-                <span class="group-title">${group.title}</span>
+                ${titleContent}
             </div>
             <div class="header-actions">
                 <i class="fas fa-pen header-btn edit-group-btn" title="Edit Group"></i>
             </div>
+            ${brandIconHtml}
         `;
         
         // Setup Card Dragging (Only in Edit Mode via Handle)
@@ -416,6 +492,19 @@ function openEditGroupModal(groupId) {
     if (!group) return;
 
     document.getElementById('edit-group-title').value = group.title;
+    
+    // Brand settings
+    const brandedCb = document.getElementById('edit-group-branded');
+    const brandUrlInput = document.getElementById('edit-group-brand-url');
+    
+    brandedCb.checked = !!group.branded;
+    brandUrlInput.value = group.brandUrl || '';
+    brandUrlInput.style.display = group.branded ? 'block' : 'none';
+    
+    brandedCb.onchange = () => {
+        brandUrlInput.style.display = brandedCb.checked ? 'block' : 'none';
+    };
+
     const container = document.getElementById('group-links-container');
     container.innerHTML = '';
 
@@ -604,64 +693,126 @@ function closeEditGroupModal() {
     currentEditGroupId = null;
 }
 
-function saveGroupEdit() {
+async function saveGroupEdit() {
     const title = document.getElementById('edit-group-title').value;
     if (!title) {
         alert("Group title is required");
         return;
     }
 
-    const rows = document.querySelectorAll('.link-edit-row');
-    const newLinks = [];
-    
-    let currentListObj = null;
+    // Brand Data Handling
+    const isBranded = document.getElementById('edit-group-branded').checked;
+    const brandUrl = document.getElementById('edit-group-brand-url').value.trim();
+    let brandData = null;
 
-    rows.forEach(row => {
-        const name = row.querySelector('.link-name').value;
-        // Handle optional URL input if it exists
-        const urlInput = row.querySelector('.link-url');
-        const url = urlInput ? ensureProtocol(urlInput.value.trim()) : '';
-        
-        const isList = row.classList.contains('list-row');
-        const isSubLink = row.classList.contains('sub-link-row');
+    // Save button state
+    const saveBtn = document.getElementById('save-group-edit');
+    const originalBtnText = saveBtn.textContent;
+    saveBtn.textContent = 'Saving...';
+    saveBtn.disabled = true;
 
-        if (name) {
-            if (isList) {
-                // Create new List Object
-                currentListObj = {
-                    id: 'l' + Math.random().toString(36).substr(2, 9),
-                    name: name,
-                    type: 'list',
-                    links: []
-                };
-                newLinks.push(currentListObj);
-            } else if (isSubLink && currentListObj) {
-                // Add to current list
-                currentListObj.links.push({
-                    name: name,
-                    url: url
-                });
+    try {
+        const groupIndex = appData.groups.findIndex(g => g.id === currentEditGroupId);
+        if (groupIndex === -1) {
+            closeEditGroupModal();
+            return;
+        }
+
+        const currentGroup = appData.groups[groupIndex];
+
+        // Fetch brand data if needed
+        if (isBranded && brandUrl) {
+            // Check if we need to fetch (url changed or data missing)
+            if (brandUrl !== currentGroup.brandUrl || !currentGroup.brandData) {
+                try {
+                    brandData = await fetchBrandData(brandUrl);
+                } catch (e) {
+                    console.error("Failed to fetch brand data", e);
+                    alert("Could not fetch brand data. Please check the domain.");
+                    // Fallback to existing if available?
+                }
             } else {
-                // Top level link
-                newLinks.push({
-                    id: 'l' + Math.random().toString(36).substr(2, 9),
-                    name: name,
-                    url: url
-                });
-                // Reset current list object because we hit a top level link
-                currentListObj = null;
+                // Keep existing data
+                brandData = currentGroup.brandData;
             }
+        } else {
+            // Branded turned off
+            brandData = null;
+        }
+
+        const rows = document.querySelectorAll('.link-edit-row');
+        const newLinks = [];
+        
+        let currentListObj = null;
+
+        rows.forEach(row => {
+            const name = row.querySelector('.link-name').value;
+            // Handle optional URL input if it exists
+            const urlInput = row.querySelector('.link-url');
+            const url = urlInput ? ensureProtocol(urlInput.value.trim()) : '';
+            
+            const isList = row.classList.contains('list-row');
+            const isSubLink = row.classList.contains('sub-link-row');
+
+            if (name) {
+                if (isList) {
+                    // Create new List Object
+                    currentListObj = {
+                        id: 'l' + Math.random().toString(36).substr(2, 9),
+                        name: name,
+                        type: 'list',
+                        links: []
+                    };
+                    newLinks.push(currentListObj);
+                } else if (isSubLink && currentListObj) {
+                    // Add to current list
+                    currentListObj.links.push({
+                        name: name,
+                        url: url
+                    });
+                } else {
+                    // Top level link
+                    newLinks.push({
+                        id: 'l' + Math.random().toString(36).substr(2, 9),
+                        name: name,
+                        url: url
+                    });
+                    // Reset current list object because we hit a top level link
+                    currentListObj = null;
+                }
+            }
+        });
+
+        if (groupIndex !== -1) {
+            appData.groups[groupIndex].title = title;
+            appData.groups[groupIndex].links = newLinks;
+            appData.groups[groupIndex].branded = isBranded;
+            appData.groups[groupIndex].brandUrl = brandUrl;
+            appData.groups[groupIndex].brandData = brandData;
+            
+            saveData();
+            renderGrid();
+        }
+        closeEditGroupModal();
+
+    } catch (err) {
+        console.error(err);
+        alert('Error saving group');
+    } finally {
+        saveBtn.textContent = originalBtnText;
+        saveBtn.disabled = false;
+    }
+}
+
+async function fetchBrandData(domain) {
+    const cleanDomain = getDomain(domain) || domain;
+    const res = await fetch(`https://api.brandfetch.io/v2/brands/${cleanDomain}`, {
+        headers: {
+            'Authorization': `Bearer ${BRANDFETCH_API_KEY}`
         }
     });
-
-    const groupIndex = appData.groups.findIndex(g => g.id === currentEditGroupId);
-    if (groupIndex !== -1) {
-        appData.groups[groupIndex].title = title;
-        appData.groups[groupIndex].links = newLinks;
-        saveData();
-        renderGrid();
-    }
-    closeEditGroupModal();
+    if (!res.ok) throw new Error('API Error');
+    return await res.json();
 }
 
 // Move Group Logic
