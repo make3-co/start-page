@@ -1,6 +1,43 @@
 // Initialize data
 let appData = JSON.parse(localStorage.getItem('startPageData')) || defaultData;
 
+// Ensure googleApps property exists
+if (!appData.enabledGoogleApps) {
+    appData.enabledGoogleApps = [
+        "Account", "Maps", "YouTube", "Gmail", "Meet", "Drive", 
+        "Calendar", "Translate", "Docs", "Sheets", "Slides", 
+        "Analytics", "Google Ads", "Gemini", "Travel"
+    ];
+}
+
+// Master list of Google Apps
+const googleAppsConfig = [
+    { name: "Account", url: "https://myaccount.google.com", iconStyle: "background-image: url('https://lh3.googleusercontent.com/a/ACg8ocLQgVi-0awVi-NrndjcNHQcb89XywgVVu3EYtlCyV-GlZoLjhTL=s128-b16-cc-rp-mo'); background-size: cover; background-position: center; border-radius: 50%;" },
+    { name: "Search", url: "https://www.google.com", iconStyle: "background-position: 0 -812px" },
+    { name: "Maps", url: "https://maps.google.com", iconStyle: "background-position: 0 -2146px" },
+    { name: "YouTube", url: "https://www.youtube.com", iconStyle: "background-position: 0 -1102px" },
+    { name: "News", url: "https://news.google.com", iconStyle: "background-position: 0 -232px" },
+    { name: "Gmail", url: "https://mail.google.com", iconStyle: "background-position: 0 -522px" },
+    { name: "Meet", url: "https://meet.google.com", iconStyle: "background-position: 0 -1856px" },
+    { name: "Chat", url: "https://chat.google.com", iconStyle: "background-position: 0 -2494px" },
+    { name: "Contacts", url: "https://contacts.google.com", iconStyle: "background-position: 0 -464px" },
+    { name: "Drive", url: "https://drive.google.com", iconStyle: "background-position: 0 -2030px" },
+    { name: "Calendar", url: "https://calendar.google.com", iconStyle: "background-position: 0 -1334px" },
+    { name: "Translate", url: "https://translate.google.com", iconStyle: "background-position: 0 -986px" },
+    { name: "Photos", url: "https://photos.google.com", iconStyle: "background-position: 0 -1682px" },
+    { name: "Voice", url: "https://duo.google.com", iconStyle: "background-position: 0 -348px" },
+    { name: "Shopping", url: "https://shopping.google.com", iconStyle: "background-position: 0 -1160px" },
+    { name: "Docs", url: "https://docs.google.com", iconStyle: "background-position: 0 -2204px" },
+    { name: "Sheets", url: "https://sheets.google.com", iconStyle: "background-position: 0 -406px" },
+    { name: "Slides", url: "https://slides.google.com", iconStyle: "background-position: 0 -2262px" },
+    { name: "Keep", url: "https://keep.google.com", iconStyle: "background-position: 0 -116px" },
+    { name: "Analytics", url: "https://analytics.google.com", iconStyle: "background-position: 0 -2668px" },
+    { name: "Google Ads", url: "https://ads.google.com", iconStyle: "background-position: 0 -2610px" },
+    { name: "Gemini", url: "https://gemini.google.com", iconStyle: "background-position: 0 -1914px" },
+    { name: "Travel", url: "https://travel.google.com", iconStyle: "background-position: 0 -1044px" },
+    { name: "Forms", url: "https://forms.google.com", iconStyle: "background-position: 0 -290px" }
+];
+
 // Elements
 const gridContainer = document.getElementById('grid-container');
 const clockEl = document.getElementById('clock');
@@ -22,9 +59,42 @@ let currentEditGroupId = null;
 // --- Initialization ---
 function init() {
     renderGrid();
+    renderGoogleApps();
     startClock();
     fetchWeather();
     setupEventListeners();
+}
+
+function renderGoogleApps() {
+    const appsGrid = document.querySelector('.apps-grid');
+    if (!appsGrid) return;
+    
+    appsGrid.innerHTML = '';
+    
+    // Filter config based on enabled apps and preserve config order (or could preserve saved order)
+    // For now, we'll iterate config and check if it's in enabled list to maintain a standard order
+    // Or we can iterate enabled list to allow reordering in future
+    
+    const enabledApps = appData.enabledGoogleApps || [];
+    
+    // We'll use the order from googleAppsConfig to keep the grid consistent regardless of saved array order
+    // unless we want drag/drop there too. Let's stick to config order for now but filtered.
+    
+    googleAppsConfig.forEach(app => {
+        if (enabledApps.includes(app.name)) {
+            const a = document.createElement('a');
+            a.href = app.url;
+            a.target = "_blank";
+            a.className = 'app-item';
+            
+            a.innerHTML = `
+                <span class="google-icon-sprite" style="${app.iconStyle}"></span>
+                <span class="app-text">${app.name}</span>
+            `;
+            
+            appsGrid.appendChild(a);
+        }
+    });
 }
 
 // Helper to extract domain for Brandfetch
@@ -531,6 +601,33 @@ function saveGroupEdit() {
 // Settings Modal
 function openSettingsModal() {
     document.getElementById('config-json').value = JSON.stringify(appData, null, 2);
+    
+    // Render Google Apps Toggles
+    const container = document.getElementById('google-apps-toggles');
+    if (container) {
+        container.innerHTML = '';
+        const enabledApps = appData.enabledGoogleApps || [];
+        
+        googleAppsConfig.forEach(app => {
+            const label = document.createElement('label');
+            label.className = 'checkbox-label';
+            label.style.display = 'flex';
+            label.style.alignItems = 'center';
+            label.style.margin = '5px 0';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = enabledApps.includes(app.name);
+            checkbox.value = app.name;
+            checkbox.style.marginRight = '10px';
+            checkbox.style.width = 'auto'; // Override specific style
+            
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(app.name));
+            container.appendChild(label);
+        });
+    }
+    
     settingsModal.classList.remove('hidden');
 }
 
@@ -576,10 +673,24 @@ function setupEventListeners() {
     document.getElementById('close-settings').addEventListener('click', closeSettingsModal);
     document.getElementById('save-settings').addEventListener('click', () => {
         try {
+            // Save JSON Config
             const newData = JSON.parse(document.getElementById('config-json').value);
             appData = newData;
+            
+            // Save Checkboxes
+            const container = document.getElementById('google-apps-toggles');
+            if (container) {
+                const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+                const enabled = [];
+                checkboxes.forEach(cb => {
+                    if (cb.checked) enabled.push(cb.value);
+                });
+                appData.enabledGoogleApps = enabled;
+            }
+            
             saveData();
             renderGrid();
+            renderGoogleApps(); // Refresh apps
             closeSettingsModal();
         } catch (e) {
             alert('Invalid JSON');
