@@ -6,7 +6,17 @@ const defaultData = {
       "links": [
         { "id": "l1", "name": "StoryPress.app", "url": "https://storypress.app" },
         { "id": "l2", "name": "StoryPress stg", "url": "https://staging.storypress.app" },
-        { "id": "l3", "name": "New Accounts", "url": "#" }
+        { 
+          "id": "l3", 
+          "name": "New Accounts", 
+          "type": "list",
+          "links": [
+             { "name": "Cloudflare Sign up", "url": "https://dash.cloudflare.com/sign-up" },
+             { "name": "Supabase", "url": "https://supabase.com/" },
+             { "name": "StoryPress Add Credentials", "url": "https://staging.storypress.pages.dev/add-credentials" },
+             { "name": "Storyblok", "url": "https://app.storyblok.com/#/login" }
+          ]
+        }
       ]
     },
     {
@@ -37,5 +47,3 @@ const defaultData = {
     }
   ]
 };
-
-

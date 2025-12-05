@@ -66,17 +66,56 @@ function renderGrid() {
 
         if (group.links) {
             group.links.forEach(link => {
-                const a = document.createElement('a');
-                a.className = 'link-item';
-                a.href = isEditMode ? '#' : link.url;
-                a.textContent = link.name;
-                a.target = "_blank"; 
-                
-                if (isEditMode) {
-                    a.addEventListener('click', (e) => e.preventDefault());
-                }
+                if (link.type === 'list') {
+                    // Render a list (dropdown)
+                    const listContainer = document.createElement('div');
+                    listContainer.className = 'list-container';
+                    
+                    const listHeader = document.createElement('div');
+                    listHeader.className = 'list-header';
+                    listHeader.innerHTML = `
+                        <span>${link.name}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    `;
+                    
+                    const listItems = document.createElement('div');
+                    listItems.className = 'list-items';
+                    
+                    if (link.links) {
+                        link.links.forEach(subLink => {
+                            const a = document.createElement('a');
+                            a.className = 'link-item';
+                            a.href = isEditMode ? '#' : subLink.url;
+                            a.textContent = subLink.name;
+                            a.target = "_blank";
+                            if (isEditMode) a.addEventListener('click', (e) => e.preventDefault());
+                            listItems.appendChild(a);
+                        });
+                    }
+                    
+                    listHeader.addEventListener('click', () => {
+                        listItems.classList.toggle('open');
+                        listHeader.classList.toggle('open');
+                    });
+                    
+                    listContainer.appendChild(listHeader);
+                    listContainer.appendChild(listItems);
+                    body.appendChild(listContainer);
+                    
+                } else {
+                    // Render a normal link
+                    const a = document.createElement('a');
+                    a.className = 'link-item';
+                    a.href = isEditMode ? '#' : link.url;
+                    a.textContent = link.name;
+                    a.target = "_blank"; 
+                    
+                    if (isEditMode) {
+                        a.addEventListener('click', (e) => e.preventDefault());
+                    }
 
-                body.appendChild(a);
+                    body.appendChild(a);
+                }
             });
         }
 
@@ -90,12 +129,6 @@ function renderGrid() {
     addGroupCard.className = 'card add-group-card';
     addGroupCard.innerHTML = '<i class="fas fa-plus"></i>';
     addGroupCard.addEventListener('click', () => {
-        // Access the function from the event listener scope or ensure it's global. 
-        // Since we moved it inside setupEventListeners, we can't call it directly from here if init() calls renderGrid() before setupEventListeners().
-        // BUT renderGrid is called in init() BEFORE setupEventListeners().
-        // So we must move openAddGroupModal to global scope as well.
-        
-        // Actually, let's fix the root cause: move all modal functions to global scope.
         document.getElementById('new-group-name').value = '';
         document.getElementById('add-group-modal').classList.remove('hidden');
     });
@@ -164,9 +197,6 @@ function saveGroupOrder() {
 
 function saveData() {
     localStorage.setItem('startPageData', JSON.stringify(appData));
-    // No renderGrid() call here if we want to avoid flicker during drag, 
-    // but generally needed for other updates. 
-    // For dragend saving, we might not need to re-render immediately since the DOM is already correct.
 }
 
 function toggleEditMode() {
@@ -234,7 +264,7 @@ function addGroup(title) {
 
 // --- Modal Handlers ---
 
-// Add Group Modal - Global Scope
+// Add Group Modal
 function closeAddGroupModal() {
     document.getElementById('add-group-modal').classList.add('hidden');
 }
@@ -251,22 +281,54 @@ function openEditGroupModal(groupId) {
 
     // Render existing links
     group.links.forEach(link => {
-        addLinkRow(link.name, link.url);
+        if (link.type === 'list') {
+            // Add List Parent
+            addLinkRow(link.name, '', 'list');
+            
+            // Add List Children
+            if (link.links) {
+                link.links.forEach(sub => {
+                    addLinkRow(sub.name, sub.url, 'sub-link');
+                });
+            }
+        } else {
+            addLinkRow(link.name, link.url);
+        }
     });
 
     editGroupModal.classList.remove('hidden');
 }
 
-function addLinkRow(name = '', url = '') {
+function addLinkRow(name = '', url = '', type = 'link') {
     const container = document.getElementById('group-links-container');
     const div = document.createElement('div');
     div.className = 'link-edit-row';
-    div.draggable = false;
+    
+    // Set type attribute for saving logic
+    div.dataset.type = type; 
+    
+    if (type === 'list') {
+        div.classList.add('list-row');
+        div.dataset.isList = "true";
+    }
+    if (type === 'sub-link') {
+        div.classList.add('sub-link-row');
+    }
+    
+    div.draggable = false; // controlled by handle
+    
+    const urlInputDisabled = type === 'list' ? 'disabled style="background:#eee; display:none;"' : '';
+    const placeholder = type === 'list' ? 'List Name' : 'URL';
+    const namePlaceholder = type === 'list' ? 'List Name' : 'Name';
+    
+    // For list, maybe make name input wider since URL is hidden
+    const nameStyle = type === 'list' ? 'flex: 3;' : '';
+
     div.innerHTML = `
         <i class="fas fa-grip-vertical handle" title="Drag to reorder"></i>
-        <input type="text" class="link-name" placeholder="Name" value="${name}">
-        <input type="text" class="link-url" placeholder="URL" value="${url}">
-        <i class="fas fa-trash remove-link-btn" title="Remove link"></i>
+        <input type="text" class="link-name" placeholder="${namePlaceholder}" value="${name}" style="${nameStyle}">
+        ${type !== 'list' ? `<input type="text" class="link-url" placeholder="${placeholder}" value="${url}" ${urlInputDisabled}>` : ''}
+        <i class="fas fa-trash remove-link-btn" title="Remove"></i>
     `;
     
     // Drag Events
@@ -283,10 +345,6 @@ function addLinkRow(name = '', url = '') {
         div.draggable = false;
     });
 
-    // Remove the restrictive mouseleave logic that was breaking drags
-    // If the user moves the mouse fast, it leaves the handle before dragstart fires on the div
-    // handle.addEventListener('mouseleave', () => { ... }); 
-
     div.addEventListener('dragstart', (e) => {
         if (!isHandleClicked) {
             e.preventDefault();
@@ -295,136 +353,54 @@ function addLinkRow(name = '', url = '') {
         
         div.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/plain', '');
+        // Set data to identify if it's a list or link
+        e.dataTransfer.setData('text/plain', type);
+        e.dataTransfer.setData('application/json', JSON.stringify({ type, name }));
     });
 
     div.addEventListener('dragend', () => {
         div.classList.remove('dragging');
         div.draggable = false;
-        // Ensure we clean up global drag state if any
+        
+        // Cleanup visual markers
+        document.querySelectorAll('.link-edit-row').forEach(row => {
+            row.classList.remove('drag-over-list', 'drag-over-top', 'drag-over-bottom');
+        });
+        
+        // Auto-update indentation based on position relative to lists
+        updateIndentationStyles();
     });
 
     div.querySelector('.remove-link-btn').addEventListener('click', () => {
-        div.remove();
+        if (type === 'list') {
+            if (confirm('Delete this list and all its links?')) {
+                div.remove();
+            }
+        } else {
+            div.remove();
+        }
     });
 
     container.appendChild(div);
 }
 
-// Helper for Drag & Drop
-function getDragAfterElement(container, y) {
-    const draggableElements = [...container.querySelectorAll('.link-edit-row:not(.dragging)')];
+// Helper to update visual indentation based on DOM order
+function updateIndentationStyles() {
+    const rows = document.querySelectorAll('#group-links-container .link-edit-row');
+    let currentList = null;
 
-    return draggableElements.reduce((closest, child) => {
-        const box = child.getBoundingClientRect();
-        const offset = y - box.top - box.height / 2;
-        if (offset < 0 && offset > closest.offset) {
-            return { offset: offset, element: child };
+    rows.forEach(row => {
+        if (row.dataset.type === 'list') {
+            currentList = row;
+            row.classList.remove('sub-link-row');
         } else {
-            return closest;
+            if (!currentList) {
+                row.classList.remove('sub-link-row');
+                row.dataset.type = 'link';
+            }
         }
-    }, { offset: Number.NEGATIVE_INFINITY }).element;
+    });
 }
-
-// Helper for Grid Drag & Drop
-function getDragAfterElementGrid(container, x, y) {
-    const draggableElements = [...container.querySelectorAll('.card:not(.dragging):not(.add-group-card)')];
-
-    return draggableElements.reduce((closest, child) => {
-        const box = child.getBoundingClientRect();
-        // Simple 2D distance approach to find closest center
-        // Not perfect insert-before/after logic, but standard for grids often involves just "closest" swap
-        // or iterating to find the first element that is "after" in flow.
-        
-        // Flow logic:
-        // Elements are ordered. We find the one we are immediately before.
-        // Check if we are to the left or above the center of the element.
-        
-        // Since standard reducing is tricky for 2D, let's try a simplified approach:
-        // Find the element whose center is closest to the mouse.
-        // Then decide if we are before or after it.
-        
-        // Reverting to simple "after" logic in reading order (left-to-right, top-to-bottom):
-        // An element is "after" the cursor if its center is after the cursor position.
-        // (box.top + box.height/2) > y || (sameRow && (box.left + box.width/2) > x)
-        
-        // Let's stick to a simpler metric: Distance to center.
-        // If we are in the first half of the element -> insert before.
-        // If in the second half -> insert after (which is before next).
-        // Actually, standard "insert before" API needs the element *after* us.
-        
-        // Let's use the "closest center" metric, and if we are 'before' that center, return it.
-        // If 'after' that center, return its next sibling?
-        
-        // Let's stick to standard 1D-style reduction but strictly based on DOM order distance? No.
-        
-        // Let's try the 1D logic applied to the whole list flow:
-        // We want the element whose center is closest to [x,y] but definitely "after" [x,y]?
-        
-        // Let's try this simple implementation:
-        // Just return the element closest to the cursor?
-        // No, we need the "after" element.
-        
-        // Let's use a simplified check:
-        // Find the element under the cursor? No, dragover.
-        
-        // Let's reuse the reducing logic but considering reading order?
-        // No, let's just check every element.
-        
-        // If cursor is left/above the element center, we are before it.
-        
-        // Calculate center of box
-        const boxCenterX = box.left + box.width / 2;
-        const boxCenterY = box.top + box.height / 2;
-        
-        // We want an element where the cursor is "behind" (left/above) its center.
-        // But we want the *closest* one of those.
-        
-        // Check if cursor is "before" this element center
-        // We define "before" as:
-        // (y < boxCenterY) - strictly above? No, could be same row.
-        // Rough approximation: 
-        // If same row (y within box top/bottom), check x.
-        // If earlier row (y < box top), definitely before.
-        
-        // Since grid flow is standard:
-        // We are before if we are significantly left or up.
-        
-        // Let's stick to the standard reduction logic but simplified:
-        // We want the element that is the *immediate next* in flow order.
-        // That element has its center *after* the cursor.
-        // And it should be the "closest" such element.
-        
-        // This is still tricky.
-        // Let's try a robust library-free approach:
-        // Just find closest element by Euclidean distance.
-        // If cursor is "after" that element (right/bottom), we insert after it (next sibling).
-        // If cursor is "before", insert before it.
-        // But `insertBefore` requires the "after" element.
-        
-        // So:
-        // 1. Find closest element.
-        // 2. Determine relative position.
-        // 3. If before -> return element.
-        // 4. If after -> return element.nextElementSibling.
-        
-        const distX = x - boxCenterX;
-        const distY = y - boxCenterY;
-        const distance = Math.hypot(distX, distY);
-        
-        if (closest.distance === undefined || distance < closest.distance) {
-            return { distance: distance, element: child, box: box };
-        } else {
-            return closest;
-        }
-    }, { distance: undefined }).element;
-
-    // Now refine: we have the closest element. Are we before or after it?
-    // This helper needs to return the element to insert *before*.
-    
-    // Refined helper logic inside event listener instead.
-}
-
 
 function closeEditGroupModal() {
     editGroupModal.classList.add('hidden');
@@ -441,15 +417,43 @@ function saveGroupEdit() {
     const rows = document.querySelectorAll('.link-edit-row');
     const newLinks = [];
     
+    let currentListObj = null;
+
     rows.forEach(row => {
         const name = row.querySelector('.link-name').value;
-        const url = row.querySelector('.link-url').value;
-        if (name && url) {
-            newLinks.push({
-                id: 'l' + Math.random().toString(36).substr(2, 9),
-                name,
-                url
-            });
+        // Handle optional URL input if it exists
+        const urlInput = row.querySelector('.link-url');
+        const url = urlInput ? urlInput.value : '';
+        
+        const isList = row.classList.contains('list-row');
+        const isSubLink = row.classList.contains('sub-link-row');
+
+        if (name) {
+            if (isList) {
+                // Create new List Object
+                currentListObj = {
+                    id: 'l' + Math.random().toString(36).substr(2, 9),
+                    name: name,
+                    type: 'list',
+                    links: []
+                };
+                newLinks.push(currentListObj);
+            } else if (isSubLink && currentListObj) {
+                // Add to current list
+                currentListObj.links.push({
+                    name: name,
+                    url: url
+                });
+            } else {
+                // Top level link
+                newLinks.push({
+                    id: 'l' + Math.random().toString(36).substr(2, 9),
+                    name: name,
+                    url: url
+                });
+                // Reset current list object because we hit a top level link
+                currentListObj = null;
+            }
         }
     });
 
@@ -458,12 +462,12 @@ function saveGroupEdit() {
         appData.groups[groupIndex].title = title;
         appData.groups[groupIndex].links = newLinks;
         saveData();
-        renderGrid(); // Need to re-render to show changes
+        renderGrid();
     }
     closeEditGroupModal();
 }
 
-// Settings Modal - Moved to global scope
+// Settings Modal
 function openSettingsModal() {
     document.getElementById('config-json').value = JSON.stringify(appData, null, 2);
     settingsModal.classList.remove('hidden');
@@ -483,6 +487,13 @@ function setupEventListeners() {
     document.getElementById('cancel-group-edit').addEventListener('click', closeEditGroupModal);
     document.getElementById('save-group-edit').addEventListener('click', saveGroupEdit);
     document.getElementById('add-link-row-btn').addEventListener('click', () => addLinkRow());
+    
+    // NEW: Add List Button
+    const addListBtn = document.getElementById('add-list-btn');
+    if (addListBtn) {
+        addListBtn.addEventListener('click', () => addLinkRow('', '', 'list'));
+    }
+    
     document.getElementById('delete-group-full').addEventListener('click', () => {
         if (confirm("Are you sure you want to delete this entire group?")) {
             deleteGroup(currentEditGroupId);
@@ -529,39 +540,63 @@ function setupEventListeners() {
         if (e.target === settingsModal) closeSettingsModal();
     });
 
-    // --- Modal Link Dragging ---
+
+    // --- Modal Link Dragging Improved ---
     const linksContainer = document.getElementById('group-links-container');
     
     linksContainer.addEventListener('dragover', (e) => {
-        e.preventDefault(); // Allow dropping
-        const draggable = document.querySelector('.link-edit-row.dragging');
-        if (!draggable) return;
+        e.preventDefault();
+        const draggingItem = document.querySelector('.link-edit-row.dragging');
+        if (!draggingItem) return;
 
-        const afterElement = getDragAfterElement(linksContainer, e.clientY);
-        if (afterElement == null) {
-            linksContainer.appendChild(draggable);
+        const siblings = [...linksContainer.querySelectorAll('.link-edit-row:not(.dragging)')];
+        const nextSibling = siblings.find(sibling => {
+            const box = sibling.getBoundingClientRect();
+            return e.clientY <= box.top + box.height / 2;
+        });
+        
+        // Visual Feedback logic
+        siblings.forEach(sib => sib.classList.remove('drag-over-top', 'drag-over-bottom', 'drag-over-list'));
+
+        if (nextSibling) {
+             linksContainer.insertBefore(draggingItem, nextSibling);
         } else {
-            linksContainer.insertBefore(draggable, afterElement);
+             linksContainer.appendChild(draggingItem);
+        }
+        
+        // DYNAMIC INDENTATION CHECK
+        const prev = draggingItem.previousElementSibling;
+        const containerLeft = linksContainer.getBoundingClientRect().left;
+        const mouseXOffset = e.clientX - containerLeft;
+        
+        if (prev && (prev.classList.contains('list-row') || prev.classList.contains('sub-link-row'))) {
+            if (mouseXOffset > 50) {
+                draggingItem.classList.add('sub-link-row');
+                draggingItem.dataset.type = 'sub-link';
+            } else {
+                draggingItem.classList.remove('sub-link-row');
+                draggingItem.dataset.type = 'link';
+            }
+        } else {
+            draggingItem.classList.remove('sub-link-row');
+            draggingItem.dataset.type = 'link';
+        }
+        
+        if (draggingItem.dataset.isList === "true") {
+             draggingItem.classList.remove('sub-link-row');
+             draggingItem.dataset.type = 'list';
         }
     });
 
-    // No specific dragend needed for links container logic as we don't save on drop here,
-    // we save on "Save Changes" button click. But we need to clean up classes.
-    // The individual row dragend listener handles cleanup.
-
-
     // --- Grid Group Dragging ---
     gridContainer.addEventListener('dragover', (e) => {
-        e.preventDefault(); // Allow dropping
+        e.preventDefault(); 
         const draggable = document.querySelector('.card.dragging');
         if (!draggable) return;
 
         const addButton = gridContainer.querySelector('.add-group-card');
-        
-        // Get all other cards
         const cards = [...gridContainer.querySelectorAll('.card:not(.dragging):not(.add-group-card)')];
         
-        // Find closest card
         const closest = cards.reduce((closest, child) => {
             const box = child.getBoundingClientRect();
             const boxCenterX = box.left + box.width / 2;
@@ -576,24 +611,17 @@ function setupEventListeners() {
 
         if (closest.element) {
             const box = closest.box;
-            // Determine if we should be before or after the closest element
-            // Logic: If we are to the right of the center, insert after.
-            // This works well for row-based grids.
             const isRightOfCenter = e.clientX > (box.left + box.width / 2);
             
             if (isRightOfCenter) {
-                // Insert after closest (before next sibling)
                 gridContainer.insertBefore(draggable, closest.element.nextElementSibling);
             } else {
-                // Insert before closest
                 gridContainer.insertBefore(draggable, closest.element);
             }
         } else {
-            // No other cards, or far away? Just put before add button
             gridContainer.insertBefore(draggable, addButton);
         }
         
-        // Safety: Ensure Add Button is always last
         if (gridContainer.lastElementChild !== addButton) {
             gridContainer.appendChild(addButton);
         }

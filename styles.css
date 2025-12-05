@@ -296,7 +296,8 @@ body.edit-mode .header-actions {
     padding: 5px;
 }
 
-.add-link-row-btn {
+.add-link-row-btn,
+.add-list-btn {
     width: 100%;
     padding: 10px;
     background: #f0f0f0;
@@ -307,7 +308,14 @@ body.edit-mode .header-actions {
     color: #666;
 }
 
-.add-link-row-btn:hover {
+.add-list-btn {
+    background: #e0e0e0;
+    border-color: #999;
+    margin-top: 5px;
+}
+
+.add-link-row-btn:hover,
+.add-list-btn:hover {
     background: #e5e5e5;
 }
 
@@ -331,4 +339,86 @@ body.edit-mode .add-group-card {
 .add-group-card:hover {
     border-color: #999;
     color: #666;
+}
+
+/* Dropdown/List Styles */
+.list-container {
+    margin-bottom: 5px;
+    border: 1px solid #eee;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.list-header {
+    padding: 8px 10px;
+    background-color: #e0e0e0;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #333;
+    user-select: none;
+}
+
+.list-header:hover {
+    background-color: #d5d5d5;
+}
+
+.list-header i {
+    transition: transform 0.2s;
+}
+
+.list-header.open i {
+    transform: rotate(180deg);
+}
+
+.list-items {
+    display: none;
+    background-color: #fff;
+    border-top: 1px solid #eee;
+}
+
+.list-items.open {
+    display: block;
+}
+
+.list-items .link-item {
+    margin-bottom: 0;
+    border: none;
+    border-bottom: 1px solid #eee;
+    padding-left: 20px; /* Indent sub-items */
+    background-color: #fdfdfd;
+}
+
+.list-items .link-item:last-child {
+    border-bottom: none;
+}
+
+/* Edit Mode Styles for Lists */
+.link-edit-row.list-row {
+    background: #eef6fc;
+    border-color: #2c82c9;
+    font-weight: bold;
+}
+
+/* Indented sub-link style */
+.sub-link-row {
+    margin-left: 30px;
+    border-left: 3px solid #2c82c9;
+}
+
+/* Visual feedback when dragging over a list to nest inside it */
+.link-edit-row.drag-over-list {
+    border: 2px dashed #2c82c9;
+    background-color: #e6f7ff;
+}
+
+/* Visual feedback for inserting before/after */
+.link-edit-row.drag-over-top {
+    border-top: 2px solid #2c82c9;
+}
+
+.link-edit-row.drag-over-bottom {
+    border-bottom: 2px solid #2c82c9;
 }
