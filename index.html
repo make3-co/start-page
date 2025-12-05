@@ -76,11 +76,28 @@
             <button id="add-list-btn" class="add-list-btn" style="margin-top: 5px;"><i class="fas fa-layer-group"></i> Add List</button>
 
             <div class="modal-actions" style="justify-content: space-between;">
-                <button id="delete-group-full" class="danger-btn">Delete Group</button>
+                <div style="display:flex; gap:10px;">
+                    <button id="delete-group-full" class="danger-btn">Delete Group</button>
+                    <button id="move-group-btn" class="secondary-btn" title="Convert this group to a list inside another group">Move to...</button>
+                </div>
                 <div style="display:flex; gap:10px;">
                     <button id="cancel-group-edit">Cancel</button>
                     <button id="save-group-edit" class="primary-btn">Save Changes</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Move Group Modal -->
+    <div id="move-group-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Move Group to...</h3>
+            <p style="font-size: 0.9em; color: #666; margin-bottom: 15px;">Select a group to move "<span id="move-source-name"></span>" into. It will become a list.</p>
+            <div id="move-target-list" style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                <!-- Target groups injected by JS -->
+            </div>
+            <div class="modal-actions" style="margin-top: 20px;">
+                <button id="cancel-move-group">Cancel</button>
             </div>
         </div>
     </div>

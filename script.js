@@ -60,6 +60,7 @@ const body = document.body;
 // Modals
 const addGroupModal = document.getElementById('add-group-modal');
 const editGroupModal = document.getElementById('edit-group-modal');
+const moveGroupModal = document.getElementById('move-group-modal'); // New
 const settingsModal = document.getElementById('settings-modal');
 
 // State
@@ -616,6 +617,110 @@ function saveGroupEdit() {
     closeEditGroupModal();
 }
 
+// Move Group Logic
+function openMoveGroupModal() {
+    const sourceGroup = appData.groups.find(g => g.id === currentEditGroupId);
+    if (!sourceGroup) return;
+
+    // Populate source name
+    document.getElementById('move-source-name').textContent = sourceGroup.title;
+
+    // Populate targets
+    const listContainer = document.getElementById('move-target-list');
+    listContainer.innerHTML = '';
+
+    const targets = appData.groups.filter(g => g.id !== currentEditGroupId);
+    
+    if (targets.length === 0) {
+        listContainer.innerHTML = '<div style="padding: 10px; color: #666; text-align: center;">No other groups available.</div>';
+    } else {
+        targets.forEach(target => {
+            const btn = document.createElement('button');
+            btn.className = 'group-select-btn'; // We'll add some CSS for this
+            btn.textContent = target.title;
+            btn.style.padding = '10px';
+            btn.style.textAlign = 'left';
+            btn.style.border = '1px solid #ddd';
+            btn.style.borderRadius = '6px';
+            btn.style.backgroundColor = '#fff';
+            btn.style.cursor = 'pointer';
+            
+            btn.addEventListener('mouseenter', () => btn.style.backgroundColor = '#f5f5f5');
+            btn.addEventListener('mouseleave', () => btn.style.backgroundColor = '#fff');
+            
+            btn.addEventListener('click', () => {
+                executeGroupMove(sourceGroup.id, target.id);
+            });
+            
+            listContainer.appendChild(btn);
+        });
+    }
+
+    closeEditGroupModal(); // Close the edit modal
+    moveGroupModal.classList.remove('hidden'); // Open move modal
+}
+
+function closeMoveGroupModal() {
+    moveGroupModal.classList.add('hidden');
+    // Re-open edit modal if we canceled? 
+    // Or just close everything. Closing everything is safer/simpler for now.
+    // If user wants to edit again, they can click the edit button on the card.
+    currentEditGroupId = null; 
+}
+
+function executeGroupMove(sourceId, targetId) {
+    const sourceIndex = appData.groups.findIndex(g => g.id === sourceId);
+    const targetIndex = appData.groups.findIndex(g => g.id === targetId);
+    
+    if (sourceIndex === -1 || targetIndex === -1) return;
+    
+    const sourceGroup = appData.groups[sourceIndex];
+    const targetGroup = appData.groups[targetIndex];
+    
+    // Flatten links from source group
+    const flattenedLinks = [];
+    
+    if (sourceGroup.links) {
+        sourceGroup.links.forEach(link => {
+            if (link.type === 'list' && link.links) {
+                // If it's a list, extract its children
+                link.links.forEach(sub => {
+                     flattenedLinks.push({
+                         name: sub.name,
+                         url: sub.url
+                     });
+                });
+            } else if (link.type !== 'list') {
+                // Simple link
+                flattenedLinks.push({
+                    name: link.name,
+                    url: link.url
+                });
+            }
+        });
+    }
+    
+    // Create new List item for target group
+    const newList = {
+        id: 'l' + Math.random().toString(36).substr(2, 9),
+        name: sourceGroup.title,
+        type: 'list',
+        links: flattenedLinks
+    };
+    
+    // Add to target
+    if (!targetGroup.links) targetGroup.links = [];
+    targetGroup.links.push(newList);
+    
+    // Remove source group
+    appData.groups.splice(sourceIndex, 1);
+    
+    // Save and Render
+    saveData();
+    renderGrid();
+    closeMoveGroupModal();
+}
+
 // Settings Modal
 function openSettingsModal() {
     document.getElementById('config-json').value = JSON.stringify(appData, null, 2);
@@ -663,6 +768,12 @@ function setupEventListeners() {
     document.getElementById('cancel-group-edit').addEventListener('click', closeEditGroupModal);
     document.getElementById('save-group-edit').addEventListener('click', saveGroupEdit);
     document.getElementById('add-link-row-btn').addEventListener('click', () => addLinkRow());
+    
+    // Move Group Button
+    const moveGroupBtn = document.getElementById('move-group-btn');
+    if (moveGroupBtn) {
+        moveGroupBtn.addEventListener('click', openMoveGroupModal);
+    }
     
     // NEW: Add List Button
     const addListBtn = document.getElementById('add-list-btn');
@@ -722,12 +833,16 @@ function setupEventListeners() {
             closeSettingsModal();
         }
     });
+
+    // Move Group Modal Listeners
+    document.getElementById('cancel-move-group').addEventListener('click', closeMoveGroupModal);
     
     // Close modals on outside click
     window.addEventListener('click', (e) => {
         if (e.target === editGroupModal) closeEditGroupModal();
         if (e.target === addGroupModal) closeAddGroupModal();
         if (e.target === settingsModal) closeSettingsModal();
+        if (e.target === moveGroupModal) closeMoveGroupModal();
     });
 
     // Apps Launcher
