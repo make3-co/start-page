@@ -283,12 +283,9 @@ function addLinkRow(name = '', url = '') {
         div.draggable = false;
     });
 
-    handle.addEventListener('mouseleave', () => {
-        if (!div.classList.contains('dragging')) {
-             isHandleClicked = false;
-             div.draggable = false;
-        }
-    });
+    // Remove the restrictive mouseleave logic that was breaking drags
+    // If the user moves the mouse fast, it leaves the handle before dragstart fires on the div
+    // handle.addEventListener('mouseleave', () => { ... }); 
 
     div.addEventListener('dragstart', (e) => {
         if (!isHandleClicked) {
