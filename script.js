@@ -1,5 +1,5 @@
 // Initialize data
-let appData = JSON.parse(localStorage.getItem('startPageData')) || defaultData;
+let appData = defaultData; // Set initial default, init() will try to load from API
 
 // Ensure googleApps property exists
 if (!appData.enabledGoogleApps) {
@@ -15,37 +15,35 @@ const appsToRemove = ["Search", "News", "Chat", "Contacts", "Photos", "Voice", "
 if (appData.enabledGoogleApps) {
     const originalLength = appData.enabledGoogleApps.length;
     appData.enabledGoogleApps = appData.enabledGoogleApps.filter(app => !appsToRemove.includes(app));
-    if (appData.enabledGoogleApps.length !== originalLength) {
-        saveData(); // Save if changes were made
-    }
+    // We don't save here immediately because we might be waiting for async load
 }
 
 // Master list of Google Apps
 const googleAppsConfig = [
     { name: "Account", url: "https://myaccount.google.com", iconStyle: "background-image: url('https://lh3.googleusercontent.com/a/default-user=s128'); background-size: cover; background-position: center; border-radius: 50%;" },
-    { name: "Search", url: "https://www.google.com", iconStyle: "background-position: 0 -812px" },
-    { name: "Maps", url: "https://maps.google.com", iconStyle: "background-position: 0 -2146px" },
-    { name: "YouTube", url: "https://www.youtube.com", iconStyle: "background-position: 0 -1102px" },
-    { name: "News", url: "https://news.google.com", iconStyle: "background-position: 0 -232px" },
-    { name: "Gmail", url: "https://mail.google.com", iconStyle: "background-position: 0 -522px" },
-    { name: "Meet", url: "https://meet.google.com", iconStyle: "background-position: 0 -1856px" },
-    { name: "Chat", url: "https://chat.google.com", iconStyle: "background-position: 0 -2494px" },
-    { name: "Contacts", url: "https://contacts.google.com", iconStyle: "background-position: 0 -464px" },
-    { name: "Drive", url: "https://drive.google.com", iconStyle: "background-position: 0 -2030px" },
-    { name: "Calendar", url: "https://calendar.google.com", iconStyle: "background-position: 0 -1334px" },
-    { name: "Translate", url: "https://translate.google.com", iconStyle: "background-position: 0 -986px" },
-    { name: "Photos", url: "https://photos.google.com", iconStyle: "background-position: 0 -1682px" },
-    { name: "Voice", url: "https://duo.google.com", iconStyle: "background-position: 0 -348px" },
-    { name: "Shopping", url: "https://shopping.google.com", iconStyle: "background-position: 0 -1160px" },
-    { name: "Docs", url: "https://docs.google.com", iconStyle: "background-position: 0 -2204px" },
-    { name: "Sheets", url: "https://sheets.google.com", iconStyle: "background-position: 0 -406px" },
-    { name: "Slides", url: "https://slides.google.com", iconStyle: "background-position: 0 -2262px" },
-    { name: "Keep", url: "https://keep.google.com", iconStyle: "background-position: 0 -116px" },
-    { name: "Analytics", url: "https://analytics.google.com", iconStyle: "background-position: 0 -2668px" },
-    { name: "Google Ads", url: "https://ads.google.com", iconStyle: "background-position: 0 -2610px" },
-    { name: "Gemini", url: "https://gemini.google.com", iconStyle: "background-position: 0 -1914px" },
-    { name: "Travel", url: "https://travel.google.com", iconStyle: "background-position: 0 -1044px" },
-    { name: "Forms", url: "https://forms.google.com", iconStyle: "background-position: 0 -290px" }
+    { name: "Search", url: "https://www.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/symbol.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Maps", url: "https://maps.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idNQ5aWWN-.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "YouTube", url: "https://www.youtube.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/youtube.com/icon/theme/dark/icon.svg?c=1idMkDQhG_dtotScqNn'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "News", url: "https://news.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idMbJg9Po3.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Gmail", url: "https://mail.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idBP5ltu-a.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Meet", url: "https://meet.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/ide81vGBGA.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Chat", url: "https://chat.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idlJx_D1re.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Contacts", url: "https://contacts.google.com", iconStyle: "background-position: 0 -464px;" },
+    { name: "Drive", url: "https://drive.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idncaAgFGT.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Calendar", url: "https://calendar.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idMX2_OMSc.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Translate", url: "https://translate.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idOA5j5-it.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Photos", url: "https://photos.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idXdVMQg1G.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Voice", url: "https://voice.google.com", iconStyle: "background-position: 0 -348px;" },
+    { name: "Shopping", url: "https://shopping.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/id7WOXk600.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Docs", url: "https://docs.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/id9yxSb4R3.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Sheets", url: "https://sheets.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idKa2XnbFY.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Slides", url: "https://slides.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idY7x55JLN.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Keep", url: "https://keep.google.com", iconStyle: "background-position: 0 -116px;" },
+    { name: "Analytics", url: "https://analytics.google.com", iconStyle: "background-position: 0 -2668px;" },
+    { name: "Google Ads", url: "https://ads.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idxtfw96uG.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Gemini", url: "https://gemini.google.com", iconStyle: "background-position: 0 -1914px;" },
+    { name: "Travel", url: "https://travel.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idxy2tVjQB.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Forms", url: "https://forms.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idkfvuesuQ.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" }
 ];
 
 // Elements
@@ -69,12 +67,49 @@ let currentEditGroupId = null;
 const BRANDFETCH_API_KEY = 'ztR49sGepTKGna_5cJkmmg3bCoHgX8SwntrR1cuWhOZH6rjbnIBSzP5QVa2DhwQE9lWk7nVd86jsw0LUBHjKnA';
 
 // --- Initialization ---
-function init() {
-    renderGrid();
-    renderGoogleApps();
+async function init() {
+    await loadData();
     startClock();
     fetchWeather();
     setupEventListeners();
+}
+
+async function loadData() {
+    try {
+        const res = await fetch('/api/data');
+        if (res.ok) {
+            const data = await res.json();
+            if (data) {
+                appData = data;
+                console.log('Loaded data from Cloudflare KV');
+            } else {
+                console.log('No data in KV, checking localStorage');
+                loadFromLocalStorage();
+            }
+        } else {
+            console.log('API unavailable (local?), fallback to localStorage');
+            loadFromLocalStorage();
+        }
+    } catch (e) {
+        console.log('Fetch failed, fallback to localStorage', e);
+        loadFromLocalStorage();
+    }
+    
+    // Cleanup after loading
+    const appsToRemove = ["Search", "News", "Chat", "Contacts", "Photos", "Voice", "Shopping", "Keep", "Forms"];
+    if (appData.enabledGoogleApps) {
+        appData.enabledGoogleApps = appData.enabledGoogleApps.filter(app => !appsToRemove.includes(app));
+    }
+    
+    renderGrid();
+    renderGoogleApps();
+}
+
+function loadFromLocalStorage() {
+    const local = localStorage.getItem('startPageData');
+    if (local) {
+        appData = JSON.parse(local);
+    }
 }
 
 function renderGoogleApps() {
@@ -410,8 +445,28 @@ function saveGroupOrder() {
 
 // --- Logic ---
 
-function saveData() {
+async function saveData() {
+    // Save to LocalStorage as backup/fast access
     localStorage.setItem('startPageData', JSON.stringify(appData));
+    
+    // Save to Cloudflare KV via Function
+    try {
+        const res = await fetch('/api/data', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(appData)
+        });
+        
+        if (!res.ok) {
+            console.error('Failed to save to Cloudflare KV', res.status);
+        } else {
+            console.log('Saved to Cloudflare KV');
+        }
+    } catch (e) {
+        console.error('Error saving to Cloudflare KV', e);
+    }
 }
 
 function toggleEditMode() {
