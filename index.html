@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
+    <!-- Google Sign In -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
     <div class="background-overlay"></div>
@@ -43,8 +45,12 @@
         </div>
 
         <div class="settings-controls">
-            <button id="edit-mode-btn" title="Toggle Edit Mode"><i class="fas fa-edit"></i></button>
+            <div id="google-signin-btn"></div>
+            
+            <button id="edit-mode-btn" title="Toggle Edit Mode" class="hidden"><i class="fas fa-edit"></i></button>
             <button id="settings-btn" title="Settings"><i class="fas fa-cog"></i></button>
+            <!-- Hidden Logout Button -->
+            <button id="logout-btn" title="Logout" class="hidden"><i class="fas fa-sign-out-alt"></i></button>
         </div>
     </header>
 
@@ -116,8 +122,18 @@
     <div id="settings-modal" class="modal hidden">
         <div class="modal-content">
             <h3>Settings</h3>
+
+            <!-- Auth Settings -->
+            <h4 style="margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 5px;">Authentication</h4>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Google Client ID</label>
+                <input type="text" id="settings-client-id" placeholder="YOUR_CLIENT_ID.apps.googleusercontent.com">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px; margin-top: 10px;">Allowed Email (Optional)</label>
+                <input type="text" id="settings-allowed-email" placeholder="your.email@gmail.com">
+                <p style="font-size: 0.8em; color: #666; margin-top: 5px;">Reload page after changing Client ID.</p>
+            </div>
             
-            <h4 style="margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 5px;">Google Apps</h4>
+            <h4 style="border-bottom: 1px solid #eee; padding-bottom: 5px;">Google Apps</h4>
             <div id="google-apps-toggles" style="max-height: 200px; overflow-y: auto; margin-bottom: 20px; border: 1px solid #eee; padding: 10px; border-radius: 8px;">
                 <!-- Checkboxes injected by JS -->
             </div>
