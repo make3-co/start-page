@@ -295,11 +295,25 @@ header {
 .grid-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 20px; /* Reduced from 25px */
+    gap: 20px; 
     padding: 0 50px 50px 50px;
     max-width: 100%;
     position: relative;
     z-index: 1;
+}
+
+.grid-container.masonry-mode {
+    align-items: start !important;
+    grid-auto-rows: 1px !important; /* Enable masonry-like row sizing */
+}
+
+.grid-container.grid-mode {
+    align-items: stretch !important; /* Cards stretch to equal height */
+    grid-auto-rows: auto !important;
+}
+
+.grid-container.grid-mode .card {
+    height: 100%; /* Ensure card fills the stretched space */
 }
 
 /* Glass Cards */

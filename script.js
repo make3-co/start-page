@@ -10,6 +10,11 @@ if (!appData.enabledGoogleApps) {
     ];
 }
 
+// Ensure layoutMode exists
+if (!appData.layoutMode) {
+    appData.layoutMode = 'masonry'; // Default to masonry
+}
+
 // Remove unwanted apps (Migration/Cleanup)
 const appsToRemove = ["Search", "News", "Chat", "Contacts", "Photos", "Voice", "Shopping", "Keep", "Forms"];
 if (appData.enabledGoogleApps) {
@@ -279,10 +284,74 @@ function createGenericIcon() {
     return i;
 }
 
+// Masonry Layout Logic
+function resizeGridItem(item) {
+    // Safety check: Only run in masonry mode
+    if (appData.layoutMode !== 'masonry') {
+        item.style.gridRowEnd = "";
+        return;
+    }
+
+    const grid = document.getElementById('grid-container');
+    const rowHeight = parseInt(window.getComputedStyle(grid).getPropertyValue('grid-auto-rows'));
+    const rowGap = parseInt(window.getComputedStyle(grid).getPropertyValue('gap'));
+    
+    // We need to measure the content height including its own padding/border
+    // Since item is the .card, we can just measure its scrollHeight or clientHeight
+    // But we must ensure we are not constrained by a previous grid-row-end
+    
+    // Temporarily unset row-span to get natural height?
+    // Actually, if align-items: start is set, the height should be natural unless constrained.
+    // However, let's measure the children height sum + padding?
+    // Or just measuring item.getBoundingClientRect().height usually works if not expanded.
+    
+    // Better approach: Measure the last child's bottom position relative to the container top
+    // The card has padding and borders.
+    
+    // Let's use a straightforward calculation.
+    // Need to account for the fact that 'gap' is between tracks.
+    
+    // Formula: span = ceil((itemHeight + gap) / (rowHeight + gap))
+    
+    // Clone to measure? No, expensive.
+    // Just measure headers + body.
+    
+    // Let's assume the card's current offsetHeight is correct because of align-self: start.
+    // Note: offsetHeight includes padding and border.
+    
+    // If the item has a large row-span from a previous calculation, does it stretch?
+    // align-items: start prevents stretching, so offsetHeight should be content-based.
+    
+    const rowSpan = Math.ceil((item.getBoundingClientRect().height + rowGap) / (rowHeight + rowGap));
+    item.style.gridRowEnd = "span " + rowSpan;
+}
+
+function resizeAllGridItems() {
+    const allItems = document.getElementsByClassName("card");
+    for (let x = 0; x < allItems.length; x++) {
+        resizeGridItem(allItems[x]);
+    }
+}
+
+// Observer for content changes (e.g. images loading, dropdowns opening)
+const resizeObserver = new ResizeObserver(entries => {
+    for (let entry of entries) {
+        resizeGridItem(entry.target);
+    }
+});
+
 // --- Rendering ---
 function renderGrid() {
+    // Clear observer
+    resizeObserver.disconnect();
+    
     gridContainer.innerHTML = '';
     
+    // Apply Layout Mode Class
+    gridContainer.classList.remove('masonry-mode', 'grid-mode');
+    const currentMode = appData.layoutMode || 'masonry';
+    gridContainer.classList.add(currentMode === 'grid' ? 'grid-mode' : 'masonry-mode');
+
     appData.groups.forEach(group => {
         const card = document.createElement('div');
         card.className = 'card';
@@ -449,6 +518,9 @@ function renderGrid() {
         card.appendChild(header);
         card.appendChild(body);
         gridContainer.appendChild(card);
+        
+        // Observe for resize
+        resizeObserver.observe(card);
     });
 
     // Add Group Card (Visible in Edit Mode)
@@ -460,6 +532,19 @@ function renderGrid() {
         document.getElementById('add-group-modal').classList.remove('hidden');
     });
     gridContainer.appendChild(addGroupCard);
+    resizeObserver.observe(addGroupCard);
+    
+    // Initial masonry calculation after render
+    // Use setTimeout to allow DOM reflow
+    if (appData.layoutMode === 'masonry') {
+        setTimeout(resizeAllGridItems, 10);
+    } else {
+        // Force clear any stuck styles if switching to grid
+        const allItems = document.getElementsByClassName("card");
+        for (let x = 0; x < allItems.length; x++) {
+            allItems[x].style.gridRowEnd = "";
+        }
+    }
 }
 
 function setupCardDragEvents(card, handle) {
@@ -1069,6 +1154,38 @@ function executeGroupMove(sourceId, targetId) {
 function openSettingsModal() {
     document.getElementById('config-json').value = JSON.stringify(appData, null, 2);
     
+    // Layout Mode Selector
+    const existingLayoutSelector = document.getElementById('layout-mode-selector');
+    if (!existingLayoutSelector) {
+        // Create layout selector if it doesn't exist
+        const settingsContent = document.querySelector('#settings-modal .modal-content');
+        const actionsDiv = document.querySelector('#settings-modal .modal-actions');
+        
+        const layoutContainer = document.createElement('div');
+        layoutContainer.id = 'layout-mode-selector';
+        layoutContainer.style.marginBottom = '20px';
+        layoutContainer.innerHTML = `
+            <h4 style="border-bottom: 1px solid #eee; padding-bottom: 5px;">Layout Mode</h4>
+            <div style="display: flex; gap: 20px; margin-top: 10px;">
+                <label style="display: flex; align-items: center; cursor: pointer;">
+                    <input type="radio" name="layout-mode" value="masonry" ${appData.layoutMode === 'masonry' ? 'checked' : ''} style="width: auto; margin-right: 8px;">
+                    Masonry (Compact)
+                </label>
+                <label style="display: flex; align-items: center; cursor: pointer;">
+                    <input type="radio" name="layout-mode" value="grid" ${appData.layoutMode === 'grid' ? 'checked' : ''} style="width: auto; margin-right: 8px;">
+                    Grid (Equal Height)
+                </label>
+            </div>
+        `;
+        
+        // Insert before the actions
+        settingsContent.insertBefore(layoutContainer, actionsDiv);
+    } else {
+        // Update checked state
+        const radios = existingLayoutSelector.querySelectorAll('input[type="radio"]');
+        radios.forEach(r => r.checked = r.value === appData.layoutMode);
+    }
+
     // Render Google Apps Toggles
     const container = document.getElementById('google-apps-toggles');
     if (container) {
@@ -1105,6 +1222,8 @@ function closeSettingsModal() {
 // --- Event Listeners ---
 
 function setupEventListeners() {
+    window.addEventListener("resize", resizeAllGridItems);
+    
     editModeBtn.addEventListener('click', toggleEditMode);
     settingsBtn.addEventListener('click', openSettingsModal);
 
@@ -1150,6 +1269,12 @@ function setupEventListeners() {
             const newData = JSON.parse(document.getElementById('config-json').value);
             appData = newData;
             
+            // Save Layout Mode
+            const layoutRadios = document.querySelectorAll('input[name="layout-mode"]');
+            layoutRadios.forEach(r => {
+                if (r.checked) appData.layoutMode = r.value;
+            });
+
             // Save Checkboxes
             const container = document.getElementById('google-apps-toggles');
             if (container) {
