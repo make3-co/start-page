@@ -208,7 +208,7 @@ function getDomain(url) {
 }
 
 // Helper to create link icon (Brandfetch -> Favicon -> Generic Fallback)
-function createLinkIcon(url) {
+function createLinkIcon(url, useFavicon = false) {
     const domain = getDomain(url);
     if (!domain) return createGenericIcon();
 
@@ -220,23 +220,54 @@ function createLinkIcon(url) {
     img.className = 'link-icon';
     img.alt = '';
     
-    if (isLocal) {
-        // Try local favicon for local IPs/domains
+    // Logic: 
+    // 1. If useFavicon is true, try favicon first (works for local and public if favicon.ico exists)
+    // 2. If isLocal is true, force favicon (since Brandfetch won't work)
+    // 3. Else default to Brandfetch
+
+    if (useFavicon || isLocal) {
         try {
             const urlObj = new URL(ensureProtocol(url));
-            img.src = `${urlObj.origin}/favicon.ico`;
+            // Try Google Favicon Service first as it's more reliable than direct favicon.ico for public sites
+            if (!isLocal) {
+                img.src = `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=64`;
+            } else {
+                img.src = `${urlObj.origin}/favicon.ico`;
+            }
         } catch (e) {
-            return createGenericIcon();
+             // Fallback to Brandfetch if NOT local and favicon failed? 
+             // Or just generic if local failed.
+             if (!isLocal && !useFavicon) {
+                 img.src = `https://cdn.brandfetch.io/${domain}/fallback/lettermark/icon.svg?c=1idMkDQhG_dtotScqNn`;
+             } else {
+                 return createGenericIcon();
+             }
         }
     } else {
-        // Use Brandfetch for public domains
+        // Use Brandfetch for public domains by default
         img.src = `https://cdn.brandfetch.io/${domain}/fallback/lettermark/icon.svg?c=1idMkDQhG_dtotScqNn`;
     }
 
     img.onerror = () => {
-        // If image fails, replace with generic icon
-        const icon = createGenericIcon();
-        img.replaceWith(icon);
+        // If first attempt fails
+        if (!useFavicon && !isLocal) {
+            // If we tried Brandfetch and it failed, maybe try favicon?
+            // Or just generic. Let's keep it simple: generic fallback.
+             const icon = createGenericIcon();
+             img.replaceWith(icon);
+        } else if (useFavicon && !isLocal) {
+            // If user wanted favicon but it failed, try Brandfetch?
+            // "I want option to use favicon if I think its better" -> implies override.
+            // If override fails, falling back to brandfetch seems helpful.
+            img.src = `https://cdn.brandfetch.io/${domain}/fallback/lettermark/icon.svg?c=1idMkDQhG_dtotScqNn`;
+            // If THAT fails, the onerror will fire again? No, event listeners don't chain automatically like that on the same element unless we re-bind or use a new element.
+            // Simplest is to replace with generic if the user-chosen preferred method failed.
+            const icon = createGenericIcon();
+            img.replaceWith(icon);
+        } else {
+             const icon = createGenericIcon();
+             img.replaceWith(icon);
+        }
     };
 
     return img;
@@ -360,7 +391,7 @@ function renderGrid() {
                             if (isEditMode) a.addEventListener('click', (e) => e.preventDefault());
 
                             // Icon logic
-                            const iconElement = createLinkIcon(subLink.url);
+                            const iconElement = createLinkIcon(subLink.url, subLink.useFavicon);
                             if (iconElement) a.appendChild(iconElement);
 
                             const span = document.createElement('span');
@@ -403,7 +434,7 @@ function renderGrid() {
                     }
 
                     // Icon logic
-                    const iconElement = createLinkIcon(link.url);
+                    const iconElement = createLinkIcon(link.url, link.useFavicon);
                     if (iconElement) a.appendChild(iconElement);
 
                     const span = document.createElement('span');
@@ -618,18 +649,18 @@ function openEditGroupModal(groupId) {
             // Add List Children
             if (link.links) {
                 link.links.forEach(sub => {
-                    addLinkRow(sub.name, sub.url, 'sub-link');
+                    addLinkRow(sub.name, sub.url, 'sub-link', sub.useFavicon);
                 });
             }
         } else {
-            addLinkRow(link.name, link.url);
+            addLinkRow(link.name, link.url, 'link', link.useFavicon);
         }
     });
 
     editGroupModal.classList.remove('hidden');
 }
 
-function addLinkRow(name = '', url = '', type = 'link') {
+function addLinkRow(name = '', url = '', type = 'link', useFavicon = false) {
     const container = document.getElementById('group-links-container');
     const div = document.createElement('div');
     div.className = 'link-edit-row';
@@ -654,10 +685,18 @@ function addLinkRow(name = '', url = '', type = 'link') {
     // For list, maybe make name input wider since URL is hidden
     const nameStyle = type === 'list' ? 'flex: 3;' : '';
 
+    const faviconCheckbox = type !== 'list' ? `
+        <label title="Use Favicon" style="display: flex; align-items: center; cursor: pointer; margin-right: 5px;">
+            <input type="checkbox" class="use-favicon-cb" ${useFavicon ? 'checked' : ''} style="width: auto; margin: 0;">
+            <i class="fas fa-image" style="margin-left: 4px; font-size: 0.8em; color: #666;"></i>
+        </label>
+    ` : '';
+
     div.innerHTML = `
         <i class="fas fa-grip-vertical handle" title="Drag to reorder"></i>
         <input type="text" class="link-name" placeholder="${namePlaceholder}" value="${name}" style="${nameStyle}">
         ${type !== 'list' ? `<input type="text" class="link-url" placeholder="${placeholder}" value="${url}" ${urlInputDisabled}>` : ''}
+        ${faviconCheckbox}
         ${type === 'list' ? `<i class="fas fa-external-link-alt convert-list-btn" title="Convert to Group" style="margin-right: 8px; cursor: pointer; color: #555;"></i>` : ''}
         <i class="fas fa-trash remove-link-btn" title="Remove"></i>
     `;
@@ -854,6 +893,10 @@ async function saveGroupEdit() {
             
             const isList = row.classList.contains('list-row');
             const isSubLink = row.classList.contains('sub-link-row');
+            
+            // Get favicon preference
+            const faviconCb = row.querySelector('.use-favicon-cb');
+            const useFavicon = faviconCb ? faviconCb.checked : false;
 
             if (name) {
                 if (isList) {
@@ -869,14 +912,16 @@ async function saveGroupEdit() {
                     // Add to current list
                     currentListObj.links.push({
                         name: name,
-                        url: url
+                        url: url,
+                        useFavicon: useFavicon
                     });
                 } else {
                     // Top level link
                     newLinks.push({
                         id: 'l' + Math.random().toString(36).substr(2, 9),
                         name: name,
-                        url: url
+                        url: url,
+                        useFavicon: useFavicon
                     });
                     // Reset current list object because we hit a top level link
                     currentListObj = null;

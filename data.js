@@ -5,17 +5,17 @@ const defaultData = {
       "title": "StoryPress",
       "links": [
         {
-          "id": "l1",
+          "id": "lmsut4iybl",
           "name": "StoryPress.app",
           "url": "https://storypress.app/"
         },
         {
-          "id": "l2",
+          "id": "lsgnr6426u",
           "name": "StoryPress stg",
           "url": "https://staging.storypress.pages.dev/"
         },
         {
-          "id": "l3",
+          "id": "l8xfe3vw86",
           "name": "New Accounts",
           "type": "list",
           "links": [
@@ -37,7 +37,10 @@ const defaultData = {
             }
           ]
         }
-      ]
+      ],
+      "branded": false,
+      "brandUrl": "",
+      "brandData": null
     },
     {
       "id": "g9",
@@ -66,27 +69,31 @@ const defaultData = {
       "title": "KWORQ",
       "links": [
         {
-          "id": "lyspvwos5e",
+          "id": "lmgbqj7xm4",
           "name": "HOUR LOG",
-          "url": "https://kworq.isdoing.com/"
+          "url": "https://kworq.isdoing.com/",
+          "useFavicon": false
         },
         {
-          "id": "lrg9atets4",
+          "id": "l9d851igjo",
           "name": "Contracts",
-          "url": "https://drive.google.com/drive/folders/1Rzv-yerVbqe0qnOXQvxGlGaAj5HYnOI2"
+          "url": "https://drive.google.com/drive/folders/1Rzv-yerVbqe0qnOXQvxGlGaAj5HYnOI2",
+          "useFavicon": false
         },
         {
-          "id": "lklcosadu4",
+          "id": "lzfr8mvut3",
           "name": "Listing",
           "type": "list",
           "links": [
             {
               "name": "Agencyspotter",
-              "url": "https://www.agencyspotter.com/recent_activity/kworq"
+              "url": "https://www.agencyspotter.com/recent_activity/kworq",
+              "useFavicon": true
             },
             {
               "name": "Clutch",
-              "url": "https://clutch.co/provider/my-profile"
+              "url": "https://clutch.co/provider/my-profile",
+              "useFavicon": true
             }
           ]
         }
@@ -270,99 +277,528 @@ const defaultData = {
       "title": "AI",
       "links": [
         {
-          "id": "ldzvxvwhr9",
+          "id": "lec88vvleq",
+          "name": "Runway",
+          "url": "https://runwayml.com/",
+          "useFavicon": false
+        },
+        {
+          "id": "lacjycphzn",
+          "name": "Gemini ",
+          "url": "https://gemini.google.com/app",
+          "useFavicon": true
+        },
+        {
+          "id": "lbaye5l1qs",
+          "name": "Google AI Studio",
+          "url": "https://aistudio.google.com/",
+          "useFavicon": true
+        },
+        {
+          "id": "lqqnigv88v",
+          "name": "Google Flow",
+          "url": "https://labs.google/flow/about",
+          "useFavicon": true
+        },
+        {
+          "id": "lr9xz67fwf",
           "name": "Promptomania",
-          "url": "https://promptomania.com/midjourney-prompt-builder/"
+          "url": "https://promptomania.com/midjourney-prompt-builder/",
+          "useFavicon": true
         },
         {
-          "id": "l1fanm353v",
+          "id": "laho4hqnd4",
           "name": "Background Removal",
-          "url": "https://express.adobe.com/tools/remove-background"
+          "url": "https://express.adobe.com/tools/remove-background",
+          "useFavicon": false
         },
         {
-          "id": "lt61r0kylq",
+          "id": "lqai96atxa",
           "name": "AI Avatar",
-          "url": "https://studio.d-id.com/editor"
+          "url": "https://studio.d-id.com/editor",
+          "useFavicon": false
         },
         {
-          "id": "lc60qdrf1t",
+          "id": "l9fs3t2a0m",
           "name": "Mid Journey Docs",
-          "url": "https://docs.midjourney.com/docs/models"
+          "url": "https://docs.midjourney.com/docs/models",
+          "useFavicon": true
         }
-      ]
+      ],
+      "branded": true,
+      "brandUrl": "https://runwayml.com/",
+      "brandData": {
+        "id": "idqnX3UwkJ",
+        "name": "Runway",
+        "domain": "runwayml.com",
+        "claimed": true,
+        "description": "Runway is an applied research company shaping the next era of art, entertainment and human creativity.",
+        "longDescription": "Runway is a pioneering brand that is revolutionizing the way we create and tell stories. By harnessing the power of cutting-edge technology, Runway is making the impossible possible. With an emphasis on accessibility, Runway is using advancements in computer graphics and machine learning to break down barriers to content creation. Their products and services are designed to empower users to tap into their creativity and bring their ideas to life. Runway offers a range of AI Magic Tools, including Text to Image, Image to Image, and Infinite Image Inpainting, among others. These tools enable users to transform their concepts into stunning visuals seamlessly. At Runway, they believe that everyone has a story to tell, and they are dedicated to making content creation accessible to all. Their team of innovative and talented individuals is constantly pushing the boundaries of what is possible in storytelling. With recent accolades including being named one of TIME100 Most Influential Companies 2023, Runway is at the forefront of the industry. Join Runway and be part of the future of creativity. Experience the power of their products and unleash your imagination. Sign up for free today and start transforming storytelling like never before.",
+        "links": [
+          {
+            "name": "youtube",
+            "url": "https://youtube.com/runwayml"
+          },
+          {
+            "name": "github",
+            "url": "https://github.com/runwayml"
+          },
+          {
+            "name": "twitter",
+            "url": "https://twitter.com/runwayml"
+          },
+          {
+            "name": "instagram",
+            "url": "https://instagram.com/runwayapp"
+          },
+          {
+            "name": "linkedin",
+            "url": "https://linkedin.com/company/runwayml"
+          },
+          {
+            "name": "facebook",
+            "url": "https://facebook.com/runwayml"
+          }
+        ],
+        "logos": [
+          {
+            "theme": "dark",
+            "formats": [
+              {
+                "src": "https://cdn.brandfetch.io/idqnX3UwkJ/w/400/h/400/theme/dark/icon.jpeg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C",
+                "background": null,
+                "format": "jpeg",
+                "height": 400,
+                "width": 400,
+                "size": 6795
+              }
+            ],
+            "tags": [],
+            "type": "icon"
+          },
+          {
+            "theme": "light",
+            "formats": [
+              {
+                "src": "https://cdn.brandfetch.io/idqnX3UwkJ/theme/light/logo.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C",
+                "background": "transparent",
+                "format": "svg",
+                "height": null,
+                "width": null,
+                "size": 1866
+              },
+              {
+                "src": "https://cdn.brandfetch.io/idqnX3UwkJ/w/800/h/180/theme/light/logo.png?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C",
+                "background": "transparent",
+                "format": "png",
+                "height": 180,
+                "width": 800,
+                "size": 11158
+              }
+            ],
+            "tags": [],
+            "type": "logo"
+          },
+          {
+            "theme": "dark",
+            "formats": [
+              {
+                "src": "https://cdn.brandfetch.io/idqnX3UwkJ/w/820/h/184/theme/dark/logo.png?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C",
+                "background": "transparent",
+                "format": "png",
+                "height": 184,
+                "width": 820,
+                "size": 12058
+              },
+              {
+                "src": "https://cdn.brandfetch.io/idqnX3UwkJ/theme/dark/logo.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C",
+                "background": "transparent",
+                "format": "svg",
+                "height": null,
+                "width": null,
+                "size": 1866
+              }
+            ],
+            "tags": [],
+            "type": "logo"
+          }
+        ],
+        "colors": [
+          {
+            "hex": "#868686",
+            "type": "dark",
+            "brightness": 134
+          },
+          {
+            "hex": "#f6f6f6",
+            "type": "light",
+            "brightness": 246
+          },
+          {
+            "hex": "#4892db",
+            "type": "accent",
+            "brightness": 136
+          }
+        ],
+        "fonts": [
+          {
+            "name": "var(--abcNormal)",
+            "type": "body",
+            "origin": "custom",
+            "originId": null,
+            "weights": []
+          },
+          {
+            "name": "GraphikRegular",
+            "type": "body",
+            "origin": "custom",
+            "originId": null,
+            "weights": []
+          },
+          {
+            "name": "var(--timesNow)",
+            "type": "title",
+            "origin": "custom",
+            "originId": null,
+            "weights": []
+          }
+        ],
+        "images": [
+          {
+            "formats": [
+              {
+                "src": "https://cdn.brandfetch.io/idqnX3UwkJ/w/1500/h/500/idiNMPnMa3.jpeg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C",
+                "background": null,
+                "format": "jpeg",
+                "height": 500,
+                "width": 1500,
+                "size": 126124
+              }
+            ],
+            "tags": [],
+            "type": "banner"
+          }
+        ],
+        "qualityScore": 0.8070530190709472,
+        "company": {
+          "employees": 51,
+          "financialIdentifiers": {
+            "isin": [],
+            "ticker": []
+          },
+          "foundedYear": 2018,
+          "industries": [
+            {
+              "score": 1,
+              "id": "37",
+              "name": "Programming and Developer Software",
+              "emoji": "🖥",
+              "parent": {
+                "emoji": "🖥",
+                "id": "28",
+                "name": "Computers Electronics and Technology",
+                "slug": "computers-electronics-and-technology"
+              },
+              "slug": "programming-and-developer-software"
+            },
+            {
+              "score": 1,
+              "id": "28",
+              "name": "Computers Electronics and Technology",
+              "emoji": "🖥",
+              "parent": null,
+              "slug": "computers-electronics-and-technology"
+            }
+          ],
+          "kind": "PRIVATELY_HELD",
+          "location": {
+            "city": "New York",
+            "country": "United States",
+            "countryCode": "US",
+            "region": "Americas",
+            "state": "New York",
+            "subregion": "Northern America"
+          }
+        },
+        "isNsfw": false,
+        "urn": "urn:brandfetch:brand:idqnX3UwkJ"
+      }
     },
     {
       "id": "g5",
       "title": "DASHBOARDS",
       "links": [
         {
-          "id": "l17",
-          "name": "Unifi",
+          "id": "l28atn39fv",
+          "name": "Unifi Cloud",
           "url": "https://unifi.ui.com/dashboard"
         },
         {
-          "id": "l18",
+          "id": "lbnyx16iu3",
           "name": "Unifi Direct",
           "url": "https://10.0.1.1"
         },
         {
-          "id": "l19",
-          "name": "Protect",
-          "url": "https://10.0.1.1/protect/dashboard"
+          "id": "lsll5w88ty",
+          "name": "Protect Direct",
+          "url": "http://10.0.1.1/protect/dashboard/all"
         },
         {
-          "id": "l20",
+          "id": "lgchfsfw9p",
           "name": "Homebridge",
-          "url": "http://10.0.40.51/login"
+          "url": "http://10.0.40.48//login"
         }
-      ]
+      ],
+      "branded": true,
+      "brandUrl": "https://ui.com/",
+      "brandData": {
+        "id": "idLAa3-67H",
+        "name": "Ubiquiti",
+        "domain": "ui.com",
+        "claimed": false,
+        "description": "Rethinking IT.",
+        "longDescription": "Ubiquiti is a brand that offers powerfully simple networking technology for organizations. With their innovative approach to rethinking IT, Ubiquiti has revolutionized the way businesses connect and communicate. Their products and services are designed to provide reliable and high-performance solutions for a wide range of networking needs. Ubiquiti's networking technology is known for its simplicity and ease of use, making it the perfect choice for both small and large organizations. Whether you need to set up a secure and efficient wireless network, manage multiple locations from a centralized platform, or enhance your network security, Ubiquiti has got you covered. From their range of wireless access points and routers to their advanced network management software, Ubiquiti offers everything you need to create a fast, stable, and secure network infrastructure. With Ubiquiti, you can streamline your IT operations and focus on what really matters: growing your business. Experience the power of Ubiquiti and transform the way you do networking. Embrace the future with Ubiquiti's cutting-edge technology and take your organization to new heights.",
+        "links": [
+          {
+            "name": "youtube",
+            "url": "https://youtube.com/UbiquitiInc"
+          },
+          {
+            "name": "twitter",
+            "url": "https://twitter.com/Ubiquiti"
+          },
+          {
+            "name": "instagram",
+            "url": "https://instagram.com/ubiquiti"
+          },
+          {
+            "name": "linkedin",
+            "url": "https://linkedin.com/company/ubiquiti-"
+          },
+          {
+            "name": "facebook",
+            "url": "https://facebook.com/UIeverywhere"
+          }
+        ],
+        "logos": [
+          {
+            "theme": "light",
+            "formats": [
+              {
+                "src": "https://cdn.brandfetch.io/idLAa3-67H/theme/light/logo.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C",
+                "background": "transparent",
+                "format": "svg",
+                "height": null,
+                "width": null,
+                "size": 3242
+              },
+              {
+                "src": "https://cdn.brandfetch.io/idLAa3-67H/w/800/h/244/theme/light/logo.png?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C",
+                "background": "transparent",
+                "format": "png",
+                "height": 244,
+                "width": 800,
+                "size": 35051
+              },
+              {
+                "src": "https://cdn.brandfetch.io/idLAa3-67H/w/800/h/244/theme/light/logo.webp?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C",
+                "background": "transparent",
+                "format": "webp",
+                "height": 244,
+                "width": 800,
+                "size": 10476
+              }
+            ],
+            "tags": [],
+            "type": "logo"
+          },
+          {
+            "theme": "dark",
+            "formats": [
+              {
+                "src": "https://cdn.brandfetch.io/idLAa3-67H/theme/dark/logo.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C",
+                "background": "transparent",
+                "format": "svg",
+                "height": null,
+                "width": null,
+                "size": 3252
+              },
+              {
+                "src": "https://cdn.brandfetch.io/idLAa3-67H/w/800/h/244/theme/dark/logo.png?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C",
+                "background": "transparent",
+                "format": "png",
+                "height": 244,
+                "width": 800,
+                "size": 34033
+              },
+              {
+                "src": "https://cdn.brandfetch.io/idLAa3-67H/w/800/h/244/theme/dark/logo.webp?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C",
+                "background": "transparent",
+                "format": "webp",
+                "height": 244,
+                "width": 800,
+                "size": 10110
+              }
+            ],
+            "tags": [],
+            "type": "logo"
+          },
+          {
+            "theme": "dark",
+            "formats": [
+              {
+                "src": "https://cdn.brandfetch.io/idLAa3-67H/w/200/h/200/theme/dark/icon.jpeg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C",
+                "background": null,
+                "format": "jpeg",
+                "height": 200,
+                "width": 200,
+                "size": 4314
+              }
+            ],
+            "tags": [],
+            "type": "icon"
+          }
+        ],
+        "colors": [
+          {
+            "hex": "#2282FF",
+            "type": "accent",
+            "brightness": 119
+          },
+          {
+            "hex": "#000000",
+            "type": "dark",
+            "brightness": 0
+          },
+          {
+            "hex": "#FFFFFF",
+            "type": "light",
+            "brightness": 255
+          }
+        ],
+        "fonts": [
+          {
+            "name": "UI Sans",
+            "type": "title",
+            "origin": "custom",
+            "originId": null,
+            "weights": []
+          },
+          {
+            "name": "UI Sans",
+            "type": "body",
+            "origin": "custom",
+            "originId": null,
+            "weights": []
+          }
+        ],
+        "images": [
+          {
+            "formats": [
+              {
+                "src": "https://cdn.brandfetch.io/idLAa3-67H/w/2048/h/1291/theme/dark/idvXea1Ov8.jpeg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C",
+                "background": null,
+                "format": "jpeg",
+                "height": 1291,
+                "width": 2048,
+                "size": 114934
+              }
+            ],
+            "tags": [],
+            "type": "banner"
+          }
+        ],
+        "qualityScore": 0.9615326923062499,
+        "company": {
+          "employees": 1001,
+          "financialIdentifiers": {
+            "isin": [
+              "US90353W1036"
+            ],
+            "ticker": [
+              "0LI9.L",
+              "UI"
+            ]
+          },
+          "foundedYear": 2005,
+          "industries": [
+            {
+              "score": 1,
+              "id": "28",
+              "name": "Computers Electronics and Technology",
+              "emoji": "🖥",
+              "parent": null,
+              "slug": "computers-electronics-and-technology"
+            },
+            {
+              "score": 1,
+              "id": "32",
+              "name": "Computers Electronics and Technology",
+              "emoji": "🖥",
+              "parent": {
+                "emoji": "🖥",
+                "id": "28",
+                "name": "Computers Electronics and Technology",
+                "slug": "computers-electronics-and-technology"
+              },
+              "slug": "computers-electronics-and-technology"
+            }
+          ],
+          "kind": "PUBLIC_COMPANY",
+          "location": {
+            "city": "San Jose",
+            "country": "United States",
+            "countryCode": "US",
+            "region": "Americas",
+            "state": "California",
+            "subregion": "Northern America"
+          }
+        },
+        "isNsfw": false,
+        "urn": "urn:brandfetch:brand:idLAa3-67H"
+      }
     },
     {
       "id": "g6",
       "title": "Social",
       "links": [
         {
-          "id": "l21",
+          "id": "lmk97avs38",
           "name": "Facebook",
-          "url": "https://www.facebook.com"
+          "url": "https://www.facebook.com",
+          "useFavicon": false
         },
         {
-          "id": "l22",
+          "id": "lxs20tgvtr",
           "name": "Twitter",
-          "type": "list",
-          "links": [
-            {
-              "name": "Twitter",
-              "url": "https://twitter.com"
-            },
-            {
-              "name": "TweetDeck",
-              "url": "https://tweetdeck.twitter.com"
-            }
-          ]
-        },
-        {
-          "id": "l23",
-          "name": "Google+",
-          "url": "https://plus.google.com"
+          "url": "https://twitter.com",
+          "useFavicon": false
         }
-      ]
+      ],
+      "branded": false,
+      "brandUrl": "",
+      "brandData": null
     },
     {
       "id": "g14",
       "title": "DISNEY",
       "links": [
         {
-          "id": "l42",
+          "id": "lnrv2avr9d",
           "name": "Magic Hour",
-          "url": "https://disneyworld.disney.go.com/en_CA/guest-services/extended-evening/"
+          "url": "https://disneyworld.disney.go.com/en_CA/guest-services/extended-evening/",
+          "useFavicon": false
         },
         {
-          "id": "l43",
+          "id": "l28faxtc4c",
           "name": "Disney GC",
-          "url": "https://www.disneygiftcard.com/mycards/list-of-cards"
+          "url": "https://www.disneygiftcard.com/mycards/list-of-cards",
+          "useFavicon": true
         }
-      ]
+      ],
+      "branded": false,
+      "brandUrl": "",
+      "brandData": null
     },
     {
       "id": "g7",
@@ -390,16 +826,21 @@ const defaultData = {
       "title": "Tools",
       "links": [
         {
-          "id": "l27",
+          "id": "lhyyv2816a",
           "name": "Regexr",
-          "url": "https://regexr.com/"
+          "url": "https://regexr.com/",
+          "useFavicon": true
         },
         {
-          "id": "l28",
+          "id": "ll0skxqlve",
           "name": "Metatags",
-          "url": "https://metatags.io/"
+          "url": "https://metatags.io/",
+          "useFavicon": true
         }
-      ]
+      ],
+      "branded": false,
+      "brandUrl": "",
+      "brandData": null
     },
     {
       "id": "g12",
@@ -438,31 +879,38 @@ const defaultData = {
       "title": "MEDS",
       "links": [
         {
-          "id": "l44",
+          "id": "l4wy13gkvz",
           "name": "Quest",
-          "url": "https://myquest.questdiagnostics.com/results"
+          "url": "https://myquest.questdiagnostics.com/results",
+          "useFavicon": false
         },
         {
-          "id": "l45",
+          "id": "lr2oixo440",
           "name": "MyChart",
           "type": "list",
           "links": [
             {
               "name": "NYU",
-              "url": "https://mychart.nyulmc.org/"
+              "url": "https://mychart.nyulmc.org/",
+              "useFavicon": false
             },
             {
               "name": "MountSinai",
-              "url": "https://mychart.mountsinai.org/"
+              "url": "https://mychart.mountsinai.org/",
+              "useFavicon": false
             }
           ]
         },
         {
-          "id": "l46",
+          "id": "leed6tayq9",
           "name": "Heath Insurance",
-          "url": "https://dashboard.purenroll.com/member-dashboard"
+          "url": "https://dashboard.corenroll.com/member-dashboard",
+          "useFavicon": false
         }
-      ]
+      ],
+      "branded": false,
+      "brandUrl": "",
+      "brandData": null
     },
     {
       "id": "g1764960744603",
