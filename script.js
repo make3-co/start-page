@@ -35,7 +35,7 @@ if (appData.enabledGoogleApps) {
 const googleAppsConfig = [
     { name: "Account", url: "https://myaccount.google.com", iconStyle: "background-image: url('https://lh3.googleusercontent.com/a/default-user=s128'); background-size: cover; background-position: center; border-radius: 50%; height: 53px;" },
     { name: "Search", url: "https://www.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/symbol.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
-    { name: "Maps", url: "https://maps.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idNQ5aWWN-.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Maps", url: "https://maps.google.com", hideLabel: true, iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idNQ5aWWN-.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center bottom; width: 90px; height: 70px; margin: 10px auto 0 auto;" },
     { name: "YouTube", url: "https://www.youtube.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/youtube.com/icon/theme/dark/icon.svg?c=1idMkDQhG_dtotScqNn'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
     { name: "News", url: "https://news.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idMbJg9Po3.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
     { name: "Gmail", url: "https://mail.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idBP5ltu-a.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
@@ -53,7 +53,7 @@ const googleAppsConfig = [
     { name: "Slides", url: "https://slides.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idY7x55JLN.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
     { name: "Keep", url: "https://keep.google.com", iconStyle: "background-position: 0 -116px;" },
     { name: "Analytics", url: "https://analytics.google.com", iconStyle: "background-position: 0 -2668px;" },
-    { name: "Google Ads", url: "https://ads.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idxtfw96uG.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Google Ads", url: "https://ads.google.com", hideLabel: true, iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idhg2vnQYV.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center bottom; width: 90px; height: 70px; margin: 10px auto 0 auto;" },
     { name: "Gemini", url: "https://gemini.google.com", iconStyle: "background-position: 0 -1914px;" },
     { name: "Travel", url: "https://travel.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idxy2tVjQB.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
     { name: "Forms", url: "https://forms.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idkfvuesuQ.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" }
@@ -303,7 +303,7 @@ function renderGoogleApps() {
             
             a.innerHTML = `
                 <span class="google-icon-sprite" style="${app.iconStyle}"></span>
-                <span class="app-text">${app.name}</span>
+                ${app.hideLabel ? '' : `<span class="app-text">${app.name}</span>`}
             `;
             
             appsGrid.appendChild(a);
