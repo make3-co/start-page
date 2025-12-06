@@ -34,29 +34,29 @@ if (appData.enabledGoogleApps) {
 // Master list of Google Apps
 const googleAppsConfig = [
     { name: "Account", url: "https://myaccount.google.com", iconStyle: "background-image: url('https://lh3.googleusercontent.com/a/default-user=s128'); background-size: cover; background-position: center; border-radius: 50%;" },
-    { name: "Search", url: "https://www.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/symbol.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
-    { name: "Maps", url: "https://maps.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idNQ5aWWN-.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
-    { name: "YouTube", url: "https://www.youtube.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/youtube.com/icon/theme/dark/icon.svg?c=1idMkDQhG_dtotScqNn'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
-    { name: "News", url: "https://news.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idMbJg9Po3.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
-    { name: "Gmail", url: "https://mail.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idBP5ltu-a.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
-    { name: "Meet", url: "https://meet.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/ide81vGBGA.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
-    { name: "Chat", url: "https://chat.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idlJx_D1re.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Search", url: "https://www.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/symbol.svg'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Maps", url: "https://maps.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idNQ5aWWN-.svg'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "YouTube", url: "https://www.youtube.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/youtube.com/icon/theme/dark/icon.svg'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "News", url: "https://news.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idMbJg9Po3.svg'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Gmail", url: "https://mail.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idBP5ltu-a.svg'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Meet", url: "https://meet.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/ide81vGBGA.svg'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Chat", url: "https://chat.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idlJx_D1re.svg'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
     { name: "Contacts", url: "https://contacts.google.com", iconStyle: "background-position: 0 -464px;" },
-    { name: "Drive", url: "https://drive.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idncaAgFGT.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
-    { name: "Calendar", url: "https://calendar.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idMX2_OMSc.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
-    { name: "Translate", url: "https://translate.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idOA5j5-it.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
-    { name: "Photos", url: "https://photos.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idXdVMQg1G.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Drive", url: "https://drive.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idncaAgFGT.svg'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Calendar", url: "https://calendar.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idMX2_OMSc.svg'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Translate", url: "https://translate.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idOA5j5-it.svg'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Photos", url: "https://photos.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idXdVMQg1G.svg'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
     { name: "Voice", url: "https://voice.google.com", iconStyle: "background-position: 0 -348px;" },
-    { name: "Shopping", url: "https://shopping.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/id7WOXk600.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
-    { name: "Docs", url: "https://docs.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/id9yxSb4R3.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
-    { name: "Sheets", url: "https://sheets.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idKa2XnbFY.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
-    { name: "Slides", url: "https://slides.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idY7x55JLN.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Shopping", url: "https://shopping.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/id7WOXk600.svg'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Docs", url: "https://docs.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/id9yxSb4R3.svg'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Sheets", url: "https://sheets.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idKa2XnbFY.svg'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Slides", url: "https://slides.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idY7x55JLN.svg'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
     { name: "Keep", url: "https://keep.google.com", iconStyle: "background-position: 0 -116px;" },
     { name: "Analytics", url: "https://analytics.google.com", iconStyle: "background-position: 0 -2668px;" },
-    { name: "Google Ads", url: "https://ads.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idxtfw96uG.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Google Ads", url: "https://ads.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idxtfw96uG.svg'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
     { name: "Gemini", url: "https://gemini.google.com", iconStyle: "background-position: 0 -1914px;" },
-    { name: "Travel", url: "https://travel.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idxy2tVjQB.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
-    { name: "Forms", url: "https://forms.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idkfvuesuQ.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" }
+    { name: "Travel", url: "https://travel.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idxy2tVjQB.svg'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
+    { name: "Forms", url: "https://forms.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idkfvuesuQ.svg'); background-size: contain; background-repeat: no-repeat; background-position: center;" }
 ];
 
 // Elements
@@ -77,13 +77,16 @@ const settingsModal = document.getElementById('settings-modal');
 // State
 let isEditMode = false;
 let currentEditGroupId = null;
-const BRANDFETCH_API_KEY = 'ztR49sGepTKGna_5cJkmmg3bCoHgX8SwntrR1cuWhOZH6rjbnIBSzP5QVa2DhwQE9lWk7nVd86jsw0LUBHjKnA';
+// Brandfetch config is loaded from backend to avoid hardcoding secrets.
+let BRANDFETCH_API_KEY = '';
+let BRANDFETCH_CLIENT_ID = '';
 
 // Global variable to store auth token
 let googleAuthToken = null;
 
 // --- Initialization ---
 async function init() {
+    await loadConfig();
     await loadData();
     startClock();
     fetchWeather();
@@ -91,6 +94,26 @@ async function init() {
     
     // Initialize Google Sign In
     initGoogleAuth();
+}
+
+// Fetch config on init
+async function loadConfig() {
+    try {
+        const res = await fetch('/api/brandfetch_config');
+        if (res.ok) {
+            const data = await res.json();
+            BRANDFETCH_API_KEY = data.apiKey;
+            BRANDFETCH_CLIENT_ID = data.clientId;
+        }
+    } catch (e) {
+        console.error("Failed to load config", e);
+    }
+}
+
+// Append Brandfetch client cache param if available
+function withBrandfetchCache(url) {
+    if (!url || !BRANDFETCH_CLIENT_ID) return url;
+    return url.includes('?') ? `${url}&c=${BRANDFETCH_CLIENT_ID}` : `${url}?c=${BRANDFETCH_CLIENT_ID}`;
 }
 
 function initGoogleAuth() {
@@ -301,8 +324,10 @@ function renderGoogleApps() {
             a.target = "_blank";
             a.className = 'app-item';
             
+            const iconStyle = withBrandfetchCache(app.iconStyle);
+
             a.innerHTML = `
-                <span class="google-icon-sprite" style="${app.iconStyle}"></span>
+                <span class="google-icon-sprite" style="${iconStyle}"></span>
                 <span class="app-text">${app.name}</span>
             `;
             
@@ -432,14 +457,16 @@ function createLinkIcon(url, useFavicon = false) {
              // Fallback to Brandfetch if NOT local and favicon failed? 
              // Or just generic if local failed.
              if (!isLocal && !useFavicon) {
-                 img.src = `https://cdn.brandfetch.io/${domain}/fallback/lettermark/icon.svg?c=1idMkDQhG_dtotScqNn`;
+                 const brandfetchUrl = `https://cdn.brandfetch.io/${domain}/fallback/lettermark/icon.svg`;
+                 img.src = withBrandfetchCache(brandfetchUrl);
              } else {
                  return createGenericIcon();
              }
         }
     } else {
         // Use Brandfetch for public domains by default
-        img.src = `https://cdn.brandfetch.io/${domain}/fallback/lettermark/icon.svg?c=1idMkDQhG_dtotScqNn`;
+        const brandfetchUrl = `https://cdn.brandfetch.io/${domain}/fallback/lettermark/icon.svg`;
+        img.src = withBrandfetchCache(brandfetchUrl);
     }
 
     img.onerror = () => {
@@ -453,7 +480,8 @@ function createLinkIcon(url, useFavicon = false) {
             // If user wanted favicon but it failed, try Brandfetch?
             // "I want option to use favicon if I think its better" -> implies override.
             // If override fails, falling back to brandfetch seems helpful.
-            img.src = `https://cdn.brandfetch.io/${domain}/fallback/lettermark/icon.svg?c=1idMkDQhG_dtotScqNn`;
+            const brandfetchUrl = `https://cdn.brandfetch.io/${domain}/fallback/lettermark/icon.svg`;
+            img.src = withBrandfetchCache(brandfetchUrl);
             // If THAT fails, the onerror will fire again? No, event listeners don't chain automatically like that on the same element unless we re-bind or use a new element.
             // Simplest is to replace with generic if the user-chosen preferred method failed.
             const icon = createGenericIcon();
