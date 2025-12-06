@@ -146,10 +146,29 @@ function renderGoogleApps() {
 
 // Helper to ensure protocol
 function ensureProtocol(url) {
-    if (url && !/^(?:f|ht)tps?:\/\//.test(url) && !url.startsWith('/') && !url.startsWith('#') && !url.startsWith('chrome://') && !url.startsWith('file://')) {
-        return 'https://' + url;
+    if (!url) return url;
+    
+    // If it already has a protocol
+    if (url.includes('://') || url.startsWith('mailto:') || url.startsWith('tel:') || url.startsWith('javascript:') || url.startsWith('about:') || url.startsWith('data:')) {
+        return url;
     }
-    return url;
+
+    // Relative links
+    if (url.startsWith('/') || url.startsWith('#')) {
+        return url;
+    }
+
+    // Local network addresses default to HTTP
+    // IPs: 10.x.x.x, 192.168.x.x, 172.16.x.x-172.31.x.x, 127.x.x.x
+    // Domains ending in .local, .lan, .test, .home
+    const isLocal = /^(?:localhost|127\.|192\.168\.|10\.|172\.(?:1[6-9]|2\d|3[01])\.)/.test(url) || 
+                    /\.(?:local|lan|test|home)(?::\d+)?(?:\/|$)/.test(url);
+
+    if (isLocal) {
+        return 'http://' + url;
+    }
+
+    return 'https://' + url;
 }
 
 // Helper to apply brand styling
