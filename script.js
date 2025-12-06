@@ -33,9 +33,9 @@ if (appData.enabledGoogleApps) {
 
 // Master list of Google Apps
 const googleAppsConfig = [
-    { name: "Account", url: "https://myaccount.google.com", iconStyle: "background-image: url('https://lh3.googleusercontent.com/a/default-user=s128'); background-size: cover; background-position: center; border-radius: 50%; height: 53px;" },
+    { name: "Account", url: "https://myaccount.google.com", iconStyle: "background-image: url('https://lh3.googleusercontent.com/a/default-user=s128'); background-size: cover; background-position: center; border-radius: 50%;" },
     { name: "Search", url: "https://www.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/symbol.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
-    { name: "Maps", url: "https://maps.google.com", hideLabel: true, iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idNQ5aWWN-.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center bottom; width: 90px; height: 70px; margin: 10px auto 0 auto;" },
+    { name: "Maps", url: "https://maps.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idNQ5aWWN-.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
     { name: "YouTube", url: "https://www.youtube.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/youtube.com/icon/theme/dark/icon.svg?c=1idMkDQhG_dtotScqNn'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
     { name: "News", url: "https://news.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idMbJg9Po3.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
     { name: "Gmail", url: "https://mail.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idBP5ltu-a.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
@@ -53,7 +53,7 @@ const googleAppsConfig = [
     { name: "Slides", url: "https://slides.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idY7x55JLN.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
     { name: "Keep", url: "https://keep.google.com", iconStyle: "background-position: 0 -116px;" },
     { name: "Analytics", url: "https://analytics.google.com", iconStyle: "background-position: 0 -2668px;" },
-    { name: "Google Ads", url: "https://ads.google.com", hideLabel: true, iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idhg2vnQYV.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center bottom; width: 90px; height: 70px; margin: 10px auto 0 auto;" },
+    { name: "Google Ads", url: "https://ads.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idxtfw96uG.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
     { name: "Gemini", url: "https://gemini.google.com", iconStyle: "background-position: 0 -1914px;" },
     { name: "Travel", url: "https://travel.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idxy2tVjQB.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" },
     { name: "Forms", url: "https://forms.google.com", iconStyle: "background-image: url('https://cdn.brandfetch.io/id6O2oGzv-/theme/dark/idkfvuesuQ.svg?c=1bxqgni3028cv5nwvd3065wbbpy7Yl9DD0C'); background-size: contain; background-repeat: no-repeat; background-position: center;" }
@@ -137,7 +137,7 @@ function initGoogleAuth() {
                     btnContainer,
                     { theme: "outline", size: "large", type: "icon", shape: "circle" }
                 );
-                // Only show if NOT logged in (prevent flashing/duplicate if already authed)
+                // Ensure visibility is controlled by auth status
                 if (!googleAuthToken) {
                     btnContainer.style.display = 'block';
                 } else {
@@ -184,7 +184,7 @@ function updateAccountIcon(pictureUrl) {
     // Update config
     const accountApp = googleAppsConfig.find(app => app.name === "Account");
     if (accountApp) {
-        accountApp.iconStyle = `background-image: url('${pictureUrl}'); background-size: cover; background-position: center; border-radius: 50%; height: 53px;`;
+        accountApp.iconStyle = `background-image: url('${pictureUrl}'); background-size: cover; background-position: center; border-radius: 50%;`;
         renderGoogleApps();
     }
 }
@@ -232,7 +232,7 @@ function logout() {
     // Reset Account Icon to default
     const accountApp = googleAppsConfig.find(app => app.name === "Account");
     if (accountApp) {
-        accountApp.iconStyle = "background-image: url('https://lh3.googleusercontent.com/a/default-user=s128'); background-size: cover; background-position: center; border-radius: 50%; height: 53px;";
+        accountApp.iconStyle = "background-image: url('https://lh3.googleusercontent.com/a/default-user=s128'); background-size: cover; background-position: center; border-radius: 50%;";
         renderGoogleApps();
     }
 
@@ -303,7 +303,7 @@ function renderGoogleApps() {
             
             a.innerHTML = `
                 <span class="google-icon-sprite" style="${app.iconStyle}"></span>
-                ${app.hideLabel ? '' : `<span class="app-text">${app.name}</span>`}
+                <span class="app-text">${app.name}</span>
             `;
             
             appsGrid.appendChild(a);
@@ -395,6 +395,33 @@ function createLinkIcon(url, useFavicon = false) {
     if (useFavicon || isLocal) {
         try {
             const urlObj = new URL(ensureProtocol(url));
+            let checkDomain = urlObj.hostname;
+
+            // Fix for Data Studio -> Looker Studio redirect & Icon
+            if (checkDomain === 'datastudio.google.com' || checkDomain === 'lookerstudio.google.com') {
+                // Return specific high-quality SVG for Looker Studio
+                img.src = 'https://www.gstatic.com/analytics-lego/svg/ic_looker_studio.svg';
+                return img;
+            }
+
+            // Google Search Console
+            if (checkDomain === 'search.google.com') {
+                img.src = 'https://www.gstatic.com/search-console/scfe/favicon.png';
+                return img;
+            }
+
+            // Google Analytics
+            if (checkDomain === 'analytics.google.com') {
+                img.src = 'https://www.gstatic.com/analytics-suite/header/suite/v2/ic_analytics.svg';
+                return img;
+            }
+
+            // Google Tag Manager
+            if (checkDomain === 'tagmanager.google.com') {
+                img.src = 'https://www.gstatic.com/analytics-suite/header/suite/v2/ic_tag_manager.svg';
+                return img;
+            }
+
             // Try Google Favicon Service first as it's more reliable than direct favicon.ico for public sites
             if (!isLocal) {
                 img.src = `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=64`;

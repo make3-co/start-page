@@ -221,7 +221,7 @@ header {
     height: 58px; /* Match logical sprite stride */
     margin: 6px auto 10px auto;
     object-fit: contain;
-    /* border-radius: 0 !important; Removed to allow inline overrides */
+    border-radius: 0 !important;
     display: block;
 }
 
