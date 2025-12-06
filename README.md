@@ -52,6 +52,10 @@ You can deploy directly from your command line:
 npx wrangler pages deploy . --project-name my-start-page --branch production
 ```
 
+- **Production deploy:** use your production branch (e.g., `--branch production` or your main branch name).
+- **Staging/Preview deploy:** point to a different branch, e.g. `--branch staging` (or any non-prod branch). Pages will treat that as a Preview environment with separate secrets/vars.
+- After changing secrets/vars in the dashboard, redeploy the corresponding environment (Production or Preview) so Functions pick up the changes.
+
 #### Step B: Create a KV Namespace
 
 To store your configuration, you need a KV Namespace.
@@ -69,6 +73,15 @@ To store your configuration, you need a KV Namespace.
     - **Variable name:** `START_PAGE_DATA` (This must be exact).
     - **KV Namespace:** Select the namespace you created in Step B.
 5.  Save the settings.
+
+#### Step D: Add Brandfetch Secrets (for branded icons/banners)
+
+Set these in **Settings** > **Environment variables** (add in both Production and Preview):
+
+- **BRANDFETCH_API_KEY** (Secret)
+- **BRANDFETCH_CLIENT_ID** (Secret)
+
+Then redeploy so the Pages Function can expose them to the frontend. If you later remove these secrets, redeploy again to ensure old deployments aren’t still serving them.
 
 #### Step D: Configure Authentication (Optional but Recommended)
 
