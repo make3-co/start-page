@@ -128,6 +128,7 @@ function initGoogleAuth() {
                 googleAuthToken = storedToken;
                 updateAuthUI(true);
                 if (payload.picture) updateAccountIcon(payload.picture);
+                refreshDataWithAuth();
             } else {
                 console.log("Session expired");
                 localStorage.removeItem('google_token');
@@ -195,6 +196,7 @@ window.handleCredentialResponse = function(response) {
         
         // Success
         updateAuthUI(true);
+        refreshDataWithAuth();
         
         // Update Account Icon
         if (payload.picture) {
@@ -266,7 +268,12 @@ function logout() {
 
 async function loadData() {
     try {
-        const res = await fetch('/api/data');
+        const headers = {};
+        if (googleAuthToken) {
+            headers['Authorization'] = `Bearer ${googleAuthToken}`;
+        }
+
+        const res = await fetch('/api/data', { headers });
         if (res.ok) {
             const data = await res.json();
             if (data) {
@@ -293,6 +300,31 @@ async function loadData() {
     
     renderGrid();
     renderGoogleApps();
+}
+
+// After login (or restored session), refresh data with auth so allowedEmail is visible
+async function refreshDataWithAuth() {
+    if (!googleAuthToken) return;
+    try {
+        const res = await fetch('/api/data', {
+            headers: { Authorization: `Bearer ${googleAuthToken}` }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data) {
+                appData = data;
+                // Cleanup after loading
+                const appsToRemove = ["Search", "News", "Chat", "Contacts", "Photos", "Voice", "Shopping", "Keep", "Forms"];
+                if (appData.enabledGoogleApps) {
+                    appData.enabledGoogleApps = appData.enabledGoogleApps.filter(app => !appsToRemove.includes(app));
+                }
+                renderGrid();
+                renderGoogleApps();
+            }
+        }
+    } catch (e) {
+        console.log('Refresh with auth failed', e);
+    }
 }
 
 function loadFromLocalStorage() {
@@ -1422,9 +1454,11 @@ function openSettingsModal() {
     
     if (clientIdInput) clientIdInput.value = (appData.authConfig && appData.authConfig.clientId) || '';
     
-    // Optional: We could leave allowedEmail empty to imply "Unchanged" or "Hidden"
-    if (allowedEmailInput) allowedEmailInput.value = ''; 
-    if (allowedEmailInput) allowedEmailInput.placeholder = "Saved (Hidden) - Enter new email to update";
+    if (allowedEmailInput) {
+        // If the server returned allowedEmail (only after auth), show it; otherwise leave empty.
+        allowedEmailInput.value = (appData.authConfig && appData.authConfig.allowedEmail) || '';
+        allowedEmailInput.placeholder = allowedEmailInput.value ? 'Saved email' : 'Saved (Hidden) - Enter new email to update';
+    }
 
     // Render Google Apps Toggles
     const container = document.getElementById('google-apps-toggles');

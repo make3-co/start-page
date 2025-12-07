@@ -8,12 +8,40 @@ export async function onRequestGet(context) {
     
     let appData = appDataStr ? JSON.parse(appDataStr) : null;
 
-    // Inject Client ID into appData (but NOT allowedEmail)
+    // Optionally verify the requester so we can return allowedEmail only to an authorized user
+    let includeAllowedEmail = false;
+    if (authConfig && authConfig.clientId) {
+        const authHeader = context.request.headers.get("Authorization");
+        if (authHeader && authHeader.startsWith("Bearer ")) {
+            const token = authHeader.split(" ")[1];
+            try {
+                const tokenRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`);
+                if (tokenRes.ok) {
+                    const payload = await tokenRes.json();
+                    
+                    // Check Audience (Client ID)
+                    if (payload.aud === authConfig.clientId) {
+                        // If allowedEmail is set, enforce it
+                        if (!authConfig.allowedEmail || payload.email.toLowerCase() === authConfig.allowedEmail.toLowerCase()) {
+                            includeAllowedEmail = true;
+                        }
+                    }
+                }
+            } catch (e) {
+                // Swallow errors and simply avoid exposing allowedEmail
+            }
+        }
+    }
+
+    // Inject Client ID into appData and optionally allowedEmail (only for authorized caller)
     if (appData && authConfig) {
         if (!appData.authConfig) appData.authConfig = {};
         appData.authConfig.clientId = authConfig.clientId;
-        // Do not expose allowedEmail
-        delete appData.authConfig.allowedEmail;
+        if (includeAllowedEmail) {
+            appData.authConfig.allowedEmail = authConfig.allowedEmail || "";
+        } else {
+            delete appData.authConfig.allowedEmail;
+        }
     } else if (appData && !appData.authConfig) {
         // Ensure structure
         appData.authConfig = { clientId: "" };
