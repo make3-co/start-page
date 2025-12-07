@@ -244,6 +244,7 @@ function updateAuthUI(isSignedIn) {
             // Re-render button just in case? Not strictly necessary if it persists.
         }
     }
+    updateSettingsVisibility(isSignedIn);
 }
 
 function logout() {
@@ -264,6 +265,14 @@ function logout() {
     if (window.google) {
         google.accounts.id.disableAutoSelect();
     }
+    updateSettingsVisibility(false);
+}
+
+function updateSettingsVisibility(isSignedIn) {
+    if (!settingsBtn) return;
+    const authConfigured = !!(appData && appData.authConfig && appData.authConfig.clientId);
+    const canAccessSettings = !authConfigured || isSignedIn;
+    settingsBtn.classList.toggle('hidden', !canAccessSettings);
 }
 
 async function loadData() {
@@ -291,6 +300,8 @@ async function loadData() {
         console.log('Fetch failed, fallback to localStorage', e);
         loadFromLocalStorage();
     }
+    
+    updateSettingsVisibility(!!googleAuthToken);
     
     // Cleanup after loading
     const appsToRemove = ["Search", "News", "Chat", "Contacts", "Photos", "Voice", "Shopping", "Keep", "Forms"];
