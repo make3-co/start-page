@@ -990,6 +990,7 @@ const defaultData = {
     "Travel"
   ],
   "layoutMode": "masonry",
+  "hideWhenLoggedOut": true,
   "authConfig": {
     "clientId": "",
     "allowedEmail": ""

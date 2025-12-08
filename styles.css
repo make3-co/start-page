@@ -270,6 +270,11 @@ header {
     justify-content: flex-end;
     gap: 15px;
     padding-top: 10px;
+    align-items: center;
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 10;
 }
 
 .settings-controls button {

@@ -120,6 +120,8 @@ To enable editing and syncing, you should configure Google Sign-In.
 - Any edits save to both `localStorage` (for fast reloads) and KV (for persistence across deploys).
 - KV content is not overwritten by new deploys; it keeps the last saved data until you clear/replace it.
 
+**Privacy note:** Anything shipped in the static bundle (e.g., `default_data.js`) is visible via View Source/DevTools even if the UI hides it when logged out. To keep links private, avoid shipping real data in `default_data.js`; store real data in KV and require auth so only `/api/data` (with a valid token) returns the content.
+
 ## Project Structure
 
 - `index.html`: Main entry point.

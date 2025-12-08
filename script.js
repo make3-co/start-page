@@ -15,6 +15,17 @@ if (!appData.layoutMode) {
     appData.layoutMode = 'masonry'; // Default to masonry
 }
 
+// Ensure privacy flag exists
+if (typeof appData.hideWhenLoggedOut === 'undefined') {
+    appData.hideWhenLoggedOut = true; // default to hiding when logged out for privacy
+}
+
+function ensurePrivacyDefaults() {
+    if (typeof appData.hideWhenLoggedOut === 'undefined') {
+        appData.hideWhenLoggedOut = true;
+    }
+}
+
 // Ensure authConfig exists
 if (!appData.authConfig) {
     appData.authConfig = {
@@ -129,6 +140,7 @@ function initGoogleAuth() {
                 updateAuthUI(true);
                 if (payload.picture) updateAccountIcon(payload.picture);
                 refreshDataWithAuth();
+        applyLoggedOutPrivacy(true);
             } else {
                 console.log("Session expired");
                 localStorage.removeItem('google_token');
@@ -197,6 +209,7 @@ window.handleCredentialResponse = function(response) {
         // Success
         updateAuthUI(true);
         refreshDataWithAuth();
+        applyLoggedOutPrivacy(true);
         
         // Update Account Icon
         if (payload.picture) {
@@ -245,6 +258,7 @@ function updateAuthUI(isSignedIn) {
         }
     }
     updateSettingsVisibility(isSignedIn);
+    applyLoggedOutPrivacy(isSignedIn);
 }
 
 function logout() {
@@ -266,6 +280,13 @@ function logout() {
         google.accounts.id.disableAutoSelect();
     }
     updateSettingsVisibility(false);
+    applyLoggedOutPrivacy(false);
+
+    // For privacy, clear in-memory data and DOM when hiding on logout
+    if (appData.hideWhenLoggedOut) {
+        appData.groups = [];
+        renderGrid();
+    }
 }
 
 function updateSettingsVisibility(isSignedIn) {
@@ -273,6 +294,50 @@ function updateSettingsVisibility(isSignedIn) {
     const authConfigured = !!(appData && appData.authConfig && appData.authConfig.clientId);
     const canAccessSettings = !authConfigured || isSignedIn;
     settingsBtn.classList.toggle('hidden', !canAccessSettings);
+}
+
+function forceShowContentIfVisibleState() {
+    // If we are signed in or privacy is off, ensure main UI elements are visible
+    const isSignedIn = !!googleAuthToken;
+    const shouldHide = appData.hideWhenLoggedOut && !isSignedIn;
+    if (shouldHide) return;
+    const elements = [
+        document.querySelector('.header-left'),
+        document.querySelector('.search-container'),
+        gridContainer
+    ];
+    elements.forEach(el => {
+        if (!el) return;
+        el.classList.remove('hidden');
+        el.style.display = '';
+        if (el === gridContainer) {
+            el.style.display = 'grid';
+        }
+    });
+}
+
+function applyLoggedOutPrivacy(isSignedIn) {
+    const shouldHide = appData.hideWhenLoggedOut && !isSignedIn;
+    const elementsToHide = [
+        document.querySelector('.header-left'),
+        document.querySelector('.search-container'),
+        gridContainer
+    ];
+    elementsToHide.forEach(el => {
+        if (!el) return;
+        el.classList.toggle('hidden', shouldHide);
+        // Safety: ensure display is restored when visible
+        if (!shouldHide) {
+            el.style.display = '';
+            if (el === gridContainer) {
+                el.style.display = 'grid';
+            }
+        }
+        if (shouldHide && el === gridContainer) {
+            // When hiding, collapse the grid to zero height/width via display none
+            el.style.display = 'none';
+        }
+    });
 }
 
 async function loadData() {
@@ -287,6 +352,8 @@ async function loadData() {
             const data = await res.json();
             if (data) {
                 appData = data;
+                ensurePrivacyDefaults();
+                if (!Array.isArray(appData.groups)) appData.groups = [];
                 console.log('Loaded data from Cloudflare KV');
             } else {
                 console.log('No data in KV, checking localStorage');
@@ -302,6 +369,9 @@ async function loadData() {
     }
     
     updateSettingsVisibility(!!googleAuthToken);
+    applyLoggedOutPrivacy(!!googleAuthToken);
+    // Safety: if content was hidden previously, ensure it is shown when signed in
+    forceShowContentIfVisibleState();
     
     // Cleanup after loading
     const appsToRemove = ["Search", "News", "Chat", "Contacts", "Photos", "Voice", "Shopping", "Keep", "Forms"];
@@ -324,6 +394,8 @@ async function refreshDataWithAuth() {
             const data = await res.json();
             if (data) {
                 appData = data;
+                ensurePrivacyDefaults();
+                if (!Array.isArray(appData.groups)) appData.groups = [];
                 // Cleanup after loading
                 const appsToRemove = ["Search", "News", "Chat", "Contacts", "Photos", "Voice", "Shopping", "Keep", "Forms"];
                 if (appData.enabledGoogleApps) {
@@ -331,6 +403,7 @@ async function refreshDataWithAuth() {
                 }
                 renderGrid();
                 renderGoogleApps();
+                forceShowContentIfVisibleState();
             }
         }
     } catch (e) {
@@ -1462,6 +1535,7 @@ function openSettingsModal() {
     // Allowed Email is hidden server-side and won't be pre-filled if we don't have it in appData.
     const clientIdInput = document.getElementById('settings-client-id');
     const allowedEmailInput = document.getElementById('settings-allowed-email');
+    const hideLoggedOutCheckbox = document.getElementById('settings-hide-loggedout');
     
     if (clientIdInput) clientIdInput.value = (appData.authConfig && appData.authConfig.clientId) || '';
     
@@ -1469,6 +1543,10 @@ function openSettingsModal() {
         // If the server returned allowedEmail (only after auth), show it; otherwise leave empty.
         allowedEmailInput.value = (appData.authConfig && appData.authConfig.allowedEmail) || '';
         allowedEmailInput.placeholder = allowedEmailInput.value ? 'Saved email' : 'Saved (Hidden) - Enter new email to update';
+    }
+
+    if (hideLoggedOutCheckbox) {
+        hideLoggedOutCheckbox.checked = !!appData.hideWhenLoggedOut;
     }
 
     // Render Google Apps Toggles
@@ -1568,6 +1646,9 @@ function setupEventListeners() {
             // Save Auth Settings via separate secure endpoint
             const clientId = document.getElementById('settings-client-id').value.trim();
             const allowedEmail = document.getElementById('settings-allowed-email').value.trim();
+            const hideLoggedOut = document.getElementById('settings-hide-loggedout').checked;
+
+            appData.hideWhenLoggedOut = hideLoggedOut;
             
             if (clientId || allowedEmail) {
                 // Call Auth Setup Endpoint
@@ -1609,6 +1690,7 @@ function setupEventListeners() {
             
             // Re-init Auth with new settings
             initGoogleAuth();
+            applyLoggedOutPrivacy(!!googleAuthToken);
             
             closeSettingsModal();
         } catch (e) {

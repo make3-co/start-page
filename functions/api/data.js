@@ -8,8 +8,9 @@ export async function onRequestGet(context) {
     
     let appData = appDataStr ? JSON.parse(appDataStr) : null;
 
-    // Optionally verify the requester so we can return allowedEmail only to an authorized user
+    // Optionally verify the requester so we can return protected fields only to an authorized user
     let includeAllowedEmail = false;
+    let isAuthorized = false;
     if (authConfig && authConfig.clientId) {
         const authHeader = context.request.headers.get("Authorization");
         if (authHeader && authHeader.startsWith("Bearer ")) {
@@ -21,9 +22,12 @@ export async function onRequestGet(context) {
                     
                     // Check Audience (Client ID)
                     if (payload.aud === authConfig.clientId) {
+                        isAuthorized = true;
                         // If allowedEmail is set, enforce it
                         if (!authConfig.allowedEmail || payload.email.toLowerCase() === authConfig.allowedEmail.toLowerCase()) {
                             includeAllowedEmail = true;
+                        } else {
+                            isAuthorized = false;
                         }
                     }
                 }
@@ -31,6 +35,20 @@ export async function onRequestGet(context) {
                 // Swallow errors and simply avoid exposing allowedEmail
             }
         }
+    }
+
+    // If privacy is enabled and user is not authorized, return a minimal payload (no groups/links)
+    if (appData && appData.hideWhenLoggedOut && !isAuthorized) {
+        const minimal = {
+            authConfig: authConfig ? { clientId: authConfig.clientId } : { clientId: "" },
+            hideWhenLoggedOut: true,
+            layoutMode: appData.layoutMode || "masonry",
+            enabledGoogleApps: appData.enabledGoogleApps || [],
+            groups: []
+        };
+        return new Response(JSON.stringify(minimal), {
+            headers: { "Content-Type": "application/json" }
+        });
     }
 
     // Inject Client ID into appData and optionally allowedEmail (only for authorized caller)
