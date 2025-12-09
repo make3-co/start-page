@@ -1,6 +1,24 @@
 // Initialize data
 let appData = defaultData; // Set initial default, init() will try to load from API
 
+// Helper for animation state
+function getKnownGroups() {
+    try {
+        const stored = localStorage.getItem('known_groups');
+        return new Set(stored ? JSON.parse(stored) : []);
+    } catch (e) {
+        return new Set();
+    }
+}
+
+function saveKnownGroups(ids) {
+    localStorage.setItem('known_groups', JSON.stringify(Array.from(ids)));
+}
+
+function clearKnownGroups() {
+    localStorage.removeItem('known_groups');
+}
+
 // Ensure googleApps property exists
 if (!appData.enabledGoogleApps) {
     appData.enabledGoogleApps = [
@@ -342,6 +360,7 @@ function logout() {
     // For privacy, clear in-memory data and DOM when hiding on logout
     if (appData.hideWhenLoggedOut) {
         appData.groups = [];
+        clearKnownGroups(); // Reset animation history on logout
         renderGrid();
     }
 }
@@ -778,9 +797,26 @@ function renderGrid() {
     const currentMode = appData.layoutMode || 'masonry';
     gridContainer.classList.add(currentMode === 'grid' ? 'grid-mode' : 'masonry-mode');
 
-    appData.groups.forEach(group => {
+    // Get currently known groups to determine animation
+    const knownGroups = getKnownGroups();
+    const currentRenderIds = new Set(knownGroups); // Start with known, update with current
+
+    appData.groups.forEach((group) => {
         const card = document.createElement('div');
-        card.className = 'card';
+        
+        // Only animate if the group ID is NOT in our known history
+        // This ensures it animates once per "lifetime" (until logout)
+        if (!knownGroups.has(group.id)) {
+            card.className = 'card animate-in';
+            // Mark as known for future renders
+            currentRenderIds.add(group.id);
+        } else {
+            card.className = 'card';
+        }
+        
+        // Ensure current ID is tracked (in case of re-adds or data sync quirks)
+        currentRenderIds.add(group.id);
+
         card.dataset.groupId = group.id;
         card.draggable = false; // Default false
 
@@ -960,6 +996,9 @@ function renderGrid() {
     gridContainer.appendChild(addGroupCard);
     resizeObserver.observe(addGroupCard);
     
+    // Save the updated list of known groups
+    saveKnownGroups(currentRenderIds);
+
     // Initial masonry calculation after render
     // Use setTimeout to allow DOM reflow
     if (appData.layoutMode === 'masonry') {

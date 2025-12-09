@@ -380,6 +380,22 @@ header {
     border: 1px solid var(--border-color);
 }
 
+/* Animation */
+.card.animate-in {
+    animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes popIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.9) translateY(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
 .card:hover {
     transform: translateY(-5px);
     background: rgba(30, 30, 30, 0.55);
