@@ -776,6 +776,24 @@ body.edit-mode .add-group-card {
     color: var(--primary-color);
 }
 
+/* Copy JSON Button */
+.copy-btn {
+    padding: 4px 10px;
+    font-size: 0.85em;
+    cursor: pointer;
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    transition: all 0.2s;
+    color: #333;
+}
+
+.copy-btn:hover {
+    background: #e5e7eb;
+    border-color: #bbb;
+    transform: translateY(-1px);
+}
+
 /* Helper class for children being moved with their parent list */
 .link-edit-row.dragging-child {
     opacity: 0.7;

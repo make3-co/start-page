@@ -1746,6 +1746,41 @@ function setupEventListeners() {
 
     // Settings Modal
     document.getElementById('close-settings').addEventListener('click', closeSettingsModal);
+    document.getElementById('copy-json-btn').addEventListener('click', (e) => {
+        e.preventDefault();
+        const textarea = document.getElementById('config-json');
+        const textToCopy = textarea.value;
+
+        // Helper for legacy copy
+        const legacyCopy = () => {
+            textarea.focus();
+            textarea.select();
+            textarea.setSelectionRange(0, 99999); // Mobile fallback
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast("JSON copied to clipboard", "success");
+                } else {
+                    showToast("Failed to copy", "error");
+                }
+            } catch (err) {
+                showToast("Failed to copy", "error");
+            }
+        };
+
+        // Try Async Clipboard API first
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showToast("JSON copied to clipboard", "success");
+            }).catch(err => {
+                console.warn('Clipboard write failed, trying fallback:', err);
+                legacyCopy();
+            });
+        } else {
+            legacyCopy();
+        }
+    });
+
     document.getElementById('save-settings').addEventListener('click', () => {
         try {
             // Save JSON Config

@@ -142,7 +142,10 @@
                 <!-- Checkboxes injected by JS -->
             </div>
 
-            <h4 style="border-bottom: 1px solid #eee; padding-bottom: 5px;">JSON Data</h4>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 10px;">
+                <h4 style="margin: 0; border: none; padding: 0;">JSON Data</h4>
+                <button id="copy-json-btn" class="copy-btn">Copy JSON</button>
+            </div>
             <p style="font-size: 0.8em; color: #666; margin-bottom: 10px;">Warning: editing JSON directly can break the app.</p>
             <textarea id="config-json" rows="10" style="font-family: monospace; font-size: 0.9em;"></textarea>
             
