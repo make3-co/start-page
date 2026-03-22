@@ -187,23 +187,38 @@ function withBrandfetchCache(url) {
 async function initAuth() {
     const signInBtn = document.getElementById('google-signin-btn');
 
-    // Check if we have an active session
+    let googleOAuthEnabled = false;
+    try {
+        const cfgRes = await fetch('/api/auth/config');
+        if (cfgRes.ok) {
+            const cfg = await cfgRes.json();
+            googleOAuthEnabled = !!cfg.googleOAuthEnabled;
+        }
+    } catch (e) {
+        console.log('Auth config check failed', e);
+    }
+
     const authed = await checkAuthSession();
 
     if (authed) {
-        // Signed in — hide sign-in button, refresh data with auth
         if (signInBtn) signInBtn.classList.add('hidden');
         await refreshDataWithAuth();
     } else {
-        // Not signed in — show sign-in button
-        if (signInBtn) signInBtn.classList.remove('hidden');
+        const authConfigured = !!(appData.authConfig && appData.authConfig.configured);
 
-        // If no auth configured at all, allow open editing
-        const authConfigured = appData.authConfig && appData.authConfig.configured;
+        // Show Google sign-in when OAuth is set up on the server, or when KV auth is configured
+        if (signInBtn && (googleOAuthEnabled || authConfigured)) {
+            signInBtn.classList.remove('hidden');
+        }
+
+        // Open editing when server auth allow-list is not in effect yet
         if (!authConfigured) {
             const editBtn = document.getElementById('edit-mode-btn');
             if (editBtn) editBtn.classList.remove('hidden');
-            if (signInBtn) signInBtn.classList.add('hidden');
+            // Hide sign-in only when there is nothing to sign in with (no OAuth env)
+            if (signInBtn && !googleOAuthEnabled) {
+                signInBtn.classList.add('hidden');
+            }
         }
     }
 }
@@ -1092,10 +1107,10 @@ function openEditGroupModal(groupId) {
     
     brandedCb.checked = !!group.branded;
     brandUrlInput.value = group.brandUrl || '';
-    brandUrlInput.style.display = group.branded ? 'block' : 'none';
+    brandUrlInput.style.display = group.branded ? '' : 'none';
     
     brandedCb.onchange = () => {
-        brandUrlInput.style.display = brandedCb.checked ? 'block' : 'none';
+        brandUrlInput.style.display = brandedCb.checked ? '' : 'none';
     };
 
     const container = document.getElementById('group-links-container');
@@ -1125,42 +1140,55 @@ function addLinkRow(name = '', url = '', type = 'link', useFavicon = false) {
     const container = document.getElementById('group-links-container');
     const div = document.createElement('div');
     div.className = 'link-edit-row';
-    
-    // Set type attribute for saving logic
-    div.dataset.type = type; 
-    
+
+    div.dataset.type = type;
+
     if (type === 'list') {
         div.classList.add('list-row');
-        div.dataset.isList = "true";
+        div.dataset.isList = 'true';
     }
     if (type === 'sub-link') {
         div.classList.add('sub-link-row');
     }
-    
-    div.draggable = false; // controlled by handle
-    
-    const urlInputDisabled = type === 'list' ? 'disabled style="background:#eee; display:none;"' : '';
+
+    div.draggable = false;
+
     const placeholder = type === 'list' ? 'List Name' : 'URL';
     const namePlaceholder = type === 'list' ? 'List Name' : 'Name';
-    
-    // For list, maybe make name input wider since URL is hidden
     const nameStyle = type === 'list' ? 'flex: 3;' : '';
 
-    const faviconCheckbox = type !== 'list' ? `
-        <label title="Use Favicon" style="display: flex; align-items: center; cursor: pointer; margin-right: 5px;">
-            <input type="checkbox" class="use-favicon-cb" ${useFavicon ? 'checked' : ''} style="width: auto; margin: 0;">
-            <i class="fas fa-image" style="margin-left: 4px; font-size: 0.8em; color: #666;"></i>
-        </label>
-    ` : '';
+    const faviconActive = useFavicon ? ' favicon-active' : '';
+    const faviconPressed = useFavicon ? 'true' : 'false';
+    const faviconBtn = type !== 'list'
+        ? `<button type="button" class="icon-btn use-favicon-btn${faviconActive}" title="Use favicon" aria-pressed="${faviconPressed}"><i class="fas fa-image"></i></button>`
+        : '';
+
+    const urlInput = type !== 'list'
+        ? `<input type="text" class="link-url" placeholder="${placeholder}" value="${url}">`
+        : '';
+
+    const convertBtnHtml = type === 'list'
+        ? `<button type="button" class="icon-btn convert-list-btn" title="Convert to Group"><i class="fas fa-external-link-alt"></i></button>`
+        : '';
 
     div.innerHTML = `
         <i class="fas fa-grip-vertical handle" title="Drag to reorder"></i>
         <input type="text" class="link-name" placeholder="${namePlaceholder}" value="${name}" style="${nameStyle}">
-        ${type !== 'list' ? `<input type="text" class="link-url" placeholder="${placeholder}" value="${url}" ${urlInputDisabled}>` : ''}
-        ${faviconCheckbox}
-        ${type === 'list' ? `<i class="fas fa-external-link-alt convert-list-btn" title="Convert to Group" style="margin-right: 8px; cursor: pointer; color: #555;"></i>` : ''}
-        <i class="fas fa-trash remove-link-btn" title="Remove"></i>
+        ${urlInput}
+        <div class="row-actions">
+            ${faviconBtn}
+            ${convertBtnHtml}
+            <button type="button" class="icon-btn delete-btn remove-link-btn" title="Remove"><i class="fas fa-trash"></i></button>
+        </div>
     `;
+
+    const favBtn = div.querySelector('.use-favicon-btn');
+    if (favBtn) {
+        favBtn.addEventListener('click', () => {
+            favBtn.classList.toggle('favicon-active');
+            favBtn.setAttribute('aria-pressed', favBtn.classList.contains('favicon-active'));
+        });
+    }
     
     // Drag Events
     let isHandleClicked = false;
@@ -1261,6 +1289,12 @@ function addLinkRow(name = '', url = '', type = 'link', useFavicon = false) {
     div.querySelector('.remove-link-btn').addEventListener('click', () => {
         if (type === 'list') {
             if (confirm('Delete this list and all its links?')) {
+                let next = div.nextElementSibling;
+                while (next && next.classList.contains('sub-link-row')) {
+                    const toRemove = next;
+                    next = next.nextElementSibling;
+                    toRemove.remove();
+                }
                 div.remove();
             }
         } else {
@@ -1308,7 +1342,7 @@ async function saveGroupEdit() {
 
     // Save button state
     const saveBtn = document.getElementById('save-group-edit');
-    const originalBtnText = saveBtn.textContent;
+    const originalBtnText = saveBtn.textContent.trim() || 'Save';
     saveBtn.textContent = 'Saving...';
     saveBtn.disabled = true;
 
@@ -1356,8 +1390,8 @@ async function saveGroupEdit() {
             const isSubLink = row.classList.contains('sub-link-row');
             
             // Get favicon preference
-            const faviconCb = row.querySelector('.use-favicon-cb');
-            const useFavicon = faviconCb ? faviconCb.checked : false;
+            const faviconBtnEl = row.querySelector('.use-favicon-btn');
+            const useFavicon = faviconBtnEl ? faviconBtnEl.classList.contains('favicon-active') : false;
 
             if (name) {
                 if (isList) {

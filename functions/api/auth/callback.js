@@ -1,8 +1,12 @@
 import { signJwt } from '../../lib/jwt.js';
 import { getCookie } from '../../lib/auth.js';
+import { buildSetCookie } from '../../lib/cookies.js';
+import { getGoogleOAuthCredentials, getJwtSecret } from '../../lib/oauth_env.js';
+import { getStartPageKv } from '../../lib/kv.js';
 
 export async function onRequestGet(context) {
-  const url = new URL(context.request.url);
+  const { request } = context;
+  const url = new URL(request.url);
   const code = url.searchParams.get('code');
   const state = url.searchParams.get('state');
   const frontendUrl = url.origin;
@@ -17,7 +21,13 @@ export async function onRequestGet(context) {
     return Response.redirect(`${frontendUrl}?error=invalid_state`, 302);
   }
 
-  const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, JWT_SECRET } = context.env;
+  const { clientId: GOOGLE_CLIENT_ID, clientSecret: GOOGLE_CLIENT_SECRET, redirectUri: GOOGLE_REDIRECT_URI } =
+    await getGoogleOAuthCredentials(context);
+  const JWT_SECRET = getJwtSecret(context.env);
+
+  if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_REDIRECT_URI || !JWT_SECRET) {
+    return Response.redirect(`${frontendUrl}?error=oauth_not_configured`, 302);
+  }
 
   // Exchange code for tokens
   const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
@@ -49,8 +59,9 @@ export async function onRequestGet(context) {
 
   const profile = await userRes.json();
 
-  // Check allowed emails if configured
-  const authConfig = await context.env.START_PAGE_DATA.get("authConfig", { type: "json" });
+  // Check allowed emails if configured (requires KV binding locally — see wrangler.toml)
+  const kv = getStartPageKv(context.env);
+  const authConfig = kv ? await kv.get('authConfig', { type: 'json' }) : null;
   if (authConfig) {
     const allowList = (authConfig.allowedEmails || []).map(e => e.toLowerCase());
     if (allowList.length && !allowList.includes(profile.email.toLowerCase())) {
@@ -67,22 +78,26 @@ export async function onRequestGet(context) {
 
   // Set httpOnly cookie, clear state cookie, and redirect home
   const headers = new Headers({ Location: frontendUrl });
-  headers.append('Set-Cookie', [
-    `token=${jwt}`,
-    'HttpOnly',
-    'Secure',
-    'SameSite=Lax',
-    'Path=/',
-    'Max-Age=604800',
-  ].join('; '));
-  headers.append('Set-Cookie', [
-    'oauth_state=',
-    'HttpOnly',
-    'Secure',
-    'SameSite=Lax',
-    'Path=/api/auth/callback',
-    'Max-Age=0',
-  ].join('; '));
+  headers.append(
+    'Set-Cookie',
+    buildSetCookie(request, [
+      `token=${jwt}`,
+      'HttpOnly',
+      'SameSite=Lax',
+      'Path=/',
+      'Max-Age=604800',
+    ])
+  );
+  headers.append(
+    'Set-Cookie',
+    buildSetCookie(request, [
+      'oauth_state=',
+      'HttpOnly',
+      'SameSite=Lax',
+      'Path=/api/auth/callback',
+      'Max-Age=0',
+    ])
+  );
 
   return new Response(null, { status: 302, headers });
 }

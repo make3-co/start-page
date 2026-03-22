@@ -9,5 +9,7 @@ export function getCookie(request, name) {
 export async function getAuthUser(context) {
   const token = getCookie(context.request, 'token');
   if (!token) return null;
-  return verifyJwt(token, context.env.JWT_SECRET);
+  const secret = String(context.env.JWT_SECRET ?? '').trim();
+  if (!secret) return null;
+  return verifyJwt(token, secret);
 }

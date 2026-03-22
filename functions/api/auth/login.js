@@ -1,5 +1,10 @@
+import { buildSetCookie } from '../../lib/cookies.js';
+import { getGoogleOAuthCredentials } from '../../lib/oauth_env.js';
+
 export async function onRequestGet(context) {
-  const { GOOGLE_CLIENT_ID, GOOGLE_REDIRECT_URI } = context.env;
+  const { request } = context;
+  const { clientId: GOOGLE_CLIENT_ID, redirectUri: GOOGLE_REDIRECT_URI } =
+    await getGoogleOAuthCredentials(context);
 
   if (!GOOGLE_CLIENT_ID || !GOOGLE_REDIRECT_URI) {
     return new Response("Google OAuth not configured", { status: 500 });
@@ -22,14 +27,16 @@ export async function onRequestGet(context) {
   const headers = new Headers({
     Location: `https://accounts.google.com/o/oauth2/v2/auth?${params}`,
   });
-  headers.append('Set-Cookie', [
-    `oauth_state=${state}`,
-    'HttpOnly',
-    'Secure',
-    'SameSite=Lax',
-    'Path=/api/auth/callback',
-    'Max-Age=600',
-  ].join('; '));
+  headers.append(
+    'Set-Cookie',
+    buildSetCookie(request, [
+      `oauth_state=${state}`,
+      'HttpOnly',
+      'SameSite=Lax',
+      'Path=/api/auth/callback',
+      'Max-Age=600',
+    ])
+  );
 
   return new Response(null, { status: 302, headers });
 }

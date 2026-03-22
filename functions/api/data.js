@@ -1,10 +1,16 @@
 import { getAuthUser } from '../lib/auth.js';
+import { getStartPageKv } from '../lib/kv.js';
 
 export async function onRequestGet(context) {
   try {
+    const kv = getStartPageKv(context.env);
+    if (!kv) {
+      return new Response(null, { status: 404 });
+    }
+
     const [appDataStr, authConfig] = await Promise.all([
-      context.env.START_PAGE_DATA.get("appData"),
-      context.env.START_PAGE_DATA.get("authConfig", { type: "json" })
+      kv.get('appData'),
+      kv.get('authConfig', { type: 'json' }),
     ]);
 
     let appData = appDataStr ? JSON.parse(appDataStr) : null;
@@ -68,10 +74,17 @@ export async function onRequestGet(context) {
 
 export async function onRequestPut(context) {
   try {
+    const kv = getStartPageKv(context.env);
+    if (!kv) {
+      return new Response(JSON.stringify({ error: 'KV binding START_PAGE_DATA is not configured' }), {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     const data = await context.request.json();
 
-    // Get Auth Config
-    const authConfig = await context.env.START_PAGE_DATA.get("authConfig", { type: "json" });
+    const authConfig = await kv.get('authConfig', { type: 'json' });
 
     // Security Check — require valid JWT cookie if auth is configured
     if (authConfig && authConfig.allowedEmails && authConfig.allowedEmails.length) {
@@ -97,7 +110,7 @@ export async function onRequestPut(context) {
       delete data.authConfig;
     }
 
-    await context.env.START_PAGE_DATA.put("appData", JSON.stringify(data));
+    await kv.put('appData', JSON.stringify(data));
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { "Content-Type": "application/json" }

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Start Page</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -72,33 +72,32 @@
 
     <!-- Edit Group Modal -->
     <div id="edit-group-modal" class="modal hidden">
-        <div class="modal-content wide">
-            <h3>Edit Group</h3>
-            <input type="text" id="edit-group-title" placeholder="Group Title">
-            
-            <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-                <label class="checkbox-label" style="display: flex; align-items: center; font-size: 0.9em; user-select: none; cursor: pointer;">
-                    <input type="checkbox" id="edit-group-branded" style="width: auto; margin-right: 8px;">
-                    Branded Group
-                </label>
-                <input type="text" id="edit-group-brand-url" placeholder="Brand Domain (e.g. facebook.com)" style="flex: 1; display: none; margin-bottom: 0;">
-            </div>
-
-            <div id="group-links-container">
-                <!-- Links rows injected by JS -->
-            </div>
-            
-            <button id="add-link-row-btn" class="add-link-row-btn"><i class="fas fa-plus"></i> Add Link</button>
-            <button id="add-list-btn" class="add-list-btn" style="margin-top: 5px;"><i class="fas fa-layer-group"></i> Add List</button>
-
-            <div class="modal-actions" style="justify-content: space-between;">
-                <div style="display:flex; gap:10px;">
-                    <button id="delete-group-full" class="danger-btn">Delete Group</button>
-                    <button id="move-group-btn" class="secondary-btn" title="Convert this group to a list inside another group">Move to...</button>
+        <div class="edit-group-panel">
+            <div class="panel-header">
+                <input type="text" id="edit-group-title" class="title-input" placeholder="Group Title">
+                <div class="brand-row">
+                    <label class="brand-toggle">
+                        <input type="checkbox" id="edit-group-branded">
+                        Branded
+                    </label>
+                    <input type="text" id="edit-group-brand-url" class="brand-url" placeholder="Brand domain (e.g. facebook.com)">
                 </div>
-                <div style="display:flex; gap:10px;">
-                    <button id="cancel-group-edit">Cancel</button>
-                    <button id="save-group-edit" class="primary-btn">Save Changes</button>
+            </div>
+            <div class="panel-scroll">
+                <div id="group-links-container"></div>
+            </div>
+            <div class="panel-footer">
+                <div class="footer-left">
+                    <button type="button" id="delete-group-full" class="btn btn-destructive">Delete</button>
+                    <button type="button" id="move-group-btn" class="btn btn-secondary" title="Convert this group to a list inside another group">Move to…</button>
+                </div>
+                <div class="footer-center">
+                    <button type="button" id="add-link-row-btn" class="btn btn-add"><i class="fas fa-plus"></i> Link</button>
+                    <button type="button" id="add-list-btn" class="btn btn-add"><i class="fas fa-layer-group"></i> List</button>
+                </div>
+                <div class="footer-right">
+                    <button type="button" id="cancel-group-edit" class="btn btn-cancel">Cancel</button>
+                    <button type="button" id="save-group-edit" class="btn btn-primary">Save</button>
                 </div>
             </div>
         </div>

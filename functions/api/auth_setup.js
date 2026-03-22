@@ -1,7 +1,16 @@
 import { getAuthUser } from '../lib/auth.js';
+import { getStartPageKv } from '../lib/kv.js';
 
 export async function onRequestPut(context) {
   try {
+    const kv = getStartPageKv(context.env);
+    if (!kv) {
+      return new Response(JSON.stringify({ error: 'KV binding START_PAGE_DATA is not configured' }), {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     const { allowedEmails: rawEmails } = await context.request.json();
 
     // Normalize allowed emails
@@ -10,7 +19,7 @@ export async function onRequestPut(context) {
       allowedEmails = rawEmails.filter(Boolean).map(e => e.trim().toLowerCase());
     }
 
-    const currentConfig = await context.env.START_PAGE_DATA.get("authConfig", { type: "json" });
+    const currentConfig = await kv.get('authConfig', { type: 'json' });
 
     if (currentConfig && currentConfig.allowedEmails && currentConfig.allowedEmails.length) {
       // Auth already configured — require valid JWT from an allowed user
@@ -41,7 +50,7 @@ export async function onRequestPut(context) {
     }
 
     const config = { allowedEmails };
-    await context.env.START_PAGE_DATA.put("authConfig", JSON.stringify(config));
+    await kv.put('authConfig', JSON.stringify(config));
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { "Content-Type": "application/json" }
