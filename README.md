@@ -170,6 +170,88 @@ Redeploy after adding.
   - `api/auth_setup.js` — PUT to update allowed emails in KV.
   - `api/brandfetch_config.js` — Exposes Brandfetch credentials to frontend.
 
+## Migrating from Client-Side Google Sign-In
+
+If you previously had this project running with the old client-side Google Sign-In (GSI SDK), follow these steps to update to the new server-side OAuth flow.
+
+### What Changed
+
+- **Old:** Google Identity Services SDK loaded in the browser. Google issued a short-lived JWT (~1 hour) directly to the client. Token stored in `localStorage`. You got logged out whenever the token expired or you closed the browser.
+- **New:** Server-side OAuth Authorization Code flow. Your server exchanges an auth code with Google, then issues its own JWT as an `httpOnly` cookie that lasts 7 days. Sessions persist across browser restarts.
+
+### Migration Steps
+
+#### 1. Pull the Latest Code
+
+```bash
+git pull origin main
+```
+
+#### 2. Get a Google Client Secret
+
+The old setup only needed a Client ID. The new setup also requires a **Client Secret**.
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/) → **APIs & Credentials**.
+2. Find your existing OAuth 2.0 Client (or create a new one — type: **Web application**).
+3. Add `https://your-domain.com/api/auth/callback` to **Authorized redirect URIs**.
+4. Make sure `https://your-domain.com` is in **Authorized JavaScript origins**.
+5. Copy the **Client ID** and **Client Secret**.
+
+> **Important:** If your OAuth consent screen is in **Testing** mode, either add your email as a test user (under **Audience**) or switch to **Production** mode.
+
+#### 3. Set Environment Secrets
+
+```bash
+wrangler pages secret put GOOGLE_CLIENT_ID --project-name your-project-name
+wrangler pages secret put GOOGLE_CLIENT_SECRET --project-name your-project-name
+wrangler pages secret put GOOGLE_REDIRECT_URI --project-name your-project-name
+wrangler pages secret put JWT_SECRET --project-name your-project-name
+```
+
+When prompted, enter:
+- `GOOGLE_CLIENT_ID` — your Client ID from step 2
+- `GOOGLE_CLIENT_SECRET` — your Client Secret from step 2
+- `GOOGLE_REDIRECT_URI` — `https://your-domain.com/api/auth/callback`
+- `JWT_SECRET` — generate one with `openssl rand -base64 32`
+
+#### 4. Update KV authConfig
+
+The old `authConfig` KV entry had a `clientId` field. The new format only uses `allowedEmails`.
+
+Go to **Cloudflare Dashboard** → **Workers & Pages** → **KV** → your namespace, and update the `authConfig` key:
+
+**Old format:**
+```json
+{"clientId": "xxx.apps.googleusercontent.com", "allowedEmails": ["you@example.com"]}
+```
+
+**New format:**
+```json
+{"allowedEmails": ["you@example.com"]}
+```
+
+Just remove the `clientId` field and keep `allowedEmails`.
+
+#### 5. Deploy
+
+```bash
+npx wrangler pages deploy . --project-name your-project-name --branch production
+```
+
+#### 6. Clear Browser Cache
+
+Hard refresh your site (`Cmd + Shift + R` / `Ctrl + Shift + R`) or open in an incognito window. The old cached JavaScript may still try to use the GSI SDK.
+
+### Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| "The OAuth client was deleted" | Your old Google Client ID was deleted. Create a new one in Google Cloud Console. |
+| "Access blocked: Authorization Error" | Your OAuth consent screen isn't configured or is in Testing mode without your email as a test user. Go to Google Cloud Console → **Branding** / **Audience**. |
+| Google login button not visible | Hard refresh or try incognito. Old cached JS may be running. |
+| Sign-in redirects but nothing happens | Check that `GOOGLE_REDIRECT_URI` matches exactly what's in your Google Cloud Console authorized redirect URIs. |
+| 500 error on login | Secrets not set. Run `wrangler pages secret list --project-name your-project-name` to verify all 4 secrets exist. Then redeploy. |
+
 ## License
 
 Personal use.

@@ -1,16 +1,4 @@
-import { verifyJwt } from '../lib/jwt.js';
-
-function getCookie(request, name) {
-  const cookies = request.headers.get('Cookie') || '';
-  const match = cookies.split(';').map(c => c.trim()).find(c => c.startsWith(`${name}=`));
-  return match ? match.substring(name.length + 1) : null;
-}
-
-async function getAuthUser(context) {
-  const token = getCookie(context.request, 'token');
-  if (!token) return null;
-  return verifyJwt(token, context.env.JWT_SECRET);
-}
+import { getAuthUser } from '../lib/auth.js';
 
 export async function onRequestGet(context) {
   try {
@@ -31,7 +19,10 @@ export async function onRequestGet(context) {
         const allowList = authConfig.allowedEmails.map(e => e.toLowerCase());
         if (!allowList.includes(user.email.toLowerCase())) {
           isAuthorized = false;
-          return new Response("Unauthorized Email", { status: 403 });
+          return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+            status: 403,
+            headers: { "Content-Type": "application/json" }
+          });
         }
       }
     }
@@ -68,7 +59,10 @@ export async function onRequestGet(context) {
       headers: { "Content-Type": "application/json" }
     });
   } catch (err) {
-    return new Response("Error fetching data: " + err.message, { status: 500 });
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
   }
 }
 
@@ -83,12 +77,18 @@ export async function onRequestPut(context) {
     if (authConfig && authConfig.allowedEmails && authConfig.allowedEmails.length) {
       const user = await getAuthUser(context);
       if (!user) {
-        return new Response("Unauthorized: Sign in required", { status: 401 });
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401,
+          headers: { "Content-Type": "application/json" }
+        });
       }
 
       const allowList = authConfig.allowedEmails.map(e => e.toLowerCase());
       if (!allowList.includes(user.email.toLowerCase())) {
-        return new Response("Unauthorized Email", { status: 403 });
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" }
+        });
       }
     }
 
@@ -103,7 +103,7 @@ export async function onRequestPut(context) {
       headers: { "Content-Type": "application/json" }
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: { "Content-Type": "application/json" }
     });

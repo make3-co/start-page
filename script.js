@@ -37,13 +37,14 @@ if (!appData.authConfig) {
     appData.authConfig = { configured: false };
 }
 
-// Remove unwanted apps (Migration/Cleanup)
-const appsToRemove = ["Search", "News", "Chat", "Contacts", "Photos", "Voice", "Shopping", "Keep", "Forms"];
-if (appData.enabledGoogleApps) {
-    const originalLength = appData.enabledGoogleApps.length;
-    appData.enabledGoogleApps = appData.enabledGoogleApps.filter(app => !appsToRemove.includes(app));
-    // We don't save here immediately because we might be waiting for async load
+// Remove deprecated apps from enabledGoogleApps
+const APPS_TO_REMOVE = ["Search", "News", "Chat", "Contacts", "Photos", "Voice", "Shopping", "Keep", "Forms"];
+function cleanupApps() {
+    if (appData.enabledGoogleApps) {
+        appData.enabledGoogleApps = appData.enabledGoogleApps.filter(app => !APPS_TO_REMOVE.includes(app));
+    }
 }
+cleanupApps();
 
 // Master list of Google Apps
 const googleAppsConfig = [
@@ -384,12 +385,7 @@ async function loadData() {
     // Safety: if content was hidden previously, ensure it is shown when signed in
     forceShowContentIfVisibleState();
     
-    // Cleanup after loading
-    const appsToRemove = ["Search", "News", "Chat", "Contacts", "Photos", "Voice", "Shopping", "Keep", "Forms"];
-    if (appData.enabledGoogleApps) {
-        appData.enabledGoogleApps = appData.enabledGoogleApps.filter(app => !appsToRemove.includes(app));
-    }
-    
+    cleanupApps();
     renderGrid();
     renderGoogleApps();
 }
@@ -413,11 +409,7 @@ async function refreshDataWithAuth() {
                 appData = data;
                 ensurePrivacyDefaults();
                 if (!Array.isArray(appData.groups)) appData.groups = [];
-                // Cleanup after loading
-                const appsToRemove = ["Search", "News", "Chat", "Contacts", "Photos", "Voice", "Shopping", "Keep", "Forms"];
-                if (appData.enabledGoogleApps) {
-                    appData.enabledGoogleApps = appData.enabledGoogleApps.filter(app => !appsToRemove.includes(app));
-                }
+                cleanupApps();
                 renderGrid();
                 renderGoogleApps();
                 forceShowContentIfVisibleState();
@@ -474,7 +466,7 @@ function ensureProtocol(url) {
     if (!url) return url;
     
     // If it already has a protocol
-    if (url.includes('://') || url.startsWith('mailto:') || url.startsWith('tel:') || url.startsWith('javascript:') || url.startsWith('about:') || url.startsWith('data:')) {
+    if (url.includes('://') || url.startsWith('mailto:') || url.startsWith('tel:') || url.startsWith('about:')) {
         return url;
     }
 
@@ -980,8 +972,11 @@ async function saveData() {
     }
 
     // Save to LocalStorage as backup/fast access
-    localStorage.setItem('startPageData', JSON.stringify(appData));
-    
+    // Only cache in localStorage if privacy mode is off
+    if (!appData.hideWhenLoggedOut) {
+        localStorage.setItem('startPageData', JSON.stringify(appData));
+    }
+
     // Save to Cloudflare KV via Function
     try {
         const res = await fetch('/api/data', {

@@ -1,12 +1,20 @@
 import { signJwt } from '../../lib/jwt.js';
+import { getCookie } from '../../lib/auth.js';
 
 export async function onRequestGet(context) {
   const url = new URL(context.request.url);
   const code = url.searchParams.get('code');
+  const state = url.searchParams.get('state');
   const frontendUrl = url.origin;
 
   if (!code) {
     return Response.redirect(`${frontendUrl}?error=missing_code`, 302);
+  }
+
+  // Verify CSRF state
+  const storedState = getCookie(context.request, 'oauth_state');
+  if (!state || !storedState || state !== storedState) {
+    return Response.redirect(`${frontendUrl}?error=invalid_state`, 302);
   }
 
   const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, JWT_SECRET } = context.env;
@@ -57,7 +65,7 @@ export async function onRequestGet(context) {
     7
   );
 
-  // Set httpOnly cookie and redirect home
+  // Set httpOnly cookie, clear state cookie, and redirect home
   const headers = new Headers({ Location: frontendUrl });
   headers.append('Set-Cookie', [
     `token=${jwt}`,
@@ -66,6 +74,14 @@ export async function onRequestGet(context) {
     'SameSite=Lax',
     'Path=/',
     'Max-Age=604800',
+  ].join('; '));
+  headers.append('Set-Cookie', [
+    'oauth_state=',
+    'HttpOnly',
+    'Secure',
+    'SameSite=Lax',
+    'Path=/api/auth/callback',
+    'Max-Age=0',
   ].join('; '));
 
   return new Response(null, { status: 302, headers });

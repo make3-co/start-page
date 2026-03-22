@@ -5,14 +5,31 @@ export async function onRequestGet(context) {
     return new Response("Google OAuth not configured", { status: 500 });
   }
 
+  // Generate random state for CSRF protection
+  const stateBytes = new Uint8Array(16);
+  crypto.getRandomValues(stateBytes);
+  const state = Array.from(stateBytes, b => b.toString(16).padStart(2, '0')).join('');
+
   const params = new URLSearchParams({
     client_id: GOOGLE_CLIENT_ID,
     redirect_uri: GOOGLE_REDIRECT_URI,
     response_type: 'code',
     scope: 'openid email profile',
-    access_type: 'offline',
     prompt: 'select_account',
+    state,
   });
 
-  return Response.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`, 302);
+  const headers = new Headers({
+    Location: `https://accounts.google.com/o/oauth2/v2/auth?${params}`,
+  });
+  headers.append('Set-Cookie', [
+    `oauth_state=${state}`,
+    'HttpOnly',
+    'Secure',
+    'SameSite=Lax',
+    'Path=/api/auth/callback',
+    'Max-Age=600',
+  ].join('; '));
+
+  return new Response(null, { status: 302, headers });
 }
