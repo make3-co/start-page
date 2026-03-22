@@ -861,6 +861,63 @@ body.edit-mode .add-group-card {
     box-sizing: border-box;
 }
 
+/* Header color picker */
+#edit-group-modal .header-color-picker {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+}
+
+#edit-group-modal .color-picker-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 0.82em;
+    color: #86868b;
+    white-space: nowrap;
+}
+
+#edit-group-modal .color-picker-label input[type="color"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 26px;
+    height: 26px;
+    border: 2px solid rgba(0,0,0,0.1);
+    border-radius: 50%;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    background: none;
+    overflow: hidden;
+}
+
+#edit-group-modal .color-picker-label input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+#edit-group-modal .color-picker-label input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 50%;
+}
+
+#edit-group-modal .color-clear-btn {
+    background: none;
+    border: none;
+    color: #c7c7cc;
+    font-size: 0.75em;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+    border-radius: 4px;
+}
+
+#edit-group-modal .color-clear-btn:hover {
+    color: #ff3b30;
+    background: rgba(255, 59, 48, 0.1);
+}
+
 #edit-group-modal .brand-url:focus {
     outline: none;
     background: #fff;

@@ -729,6 +729,14 @@ function renderGrid() {
         // Brand Styling
         if (group.branded && group.brandData) {
             applyBrandStyling(header, group.brandData);
+        } else if (group.headerColor) {
+            header.style.background = group.headerColor;
+            // Use white text on dark backgrounds, dark on light
+            const r = parseInt(group.headerColor.slice(1,3), 16);
+            const g = parseInt(group.headerColor.slice(3,5), 16);
+            const b = parseInt(group.headerColor.slice(5,7), 16);
+            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            header.style.color = luminance > 0.5 ? '#1d1d1f' : '#ffffff';
         }
 
         // Header HTML
@@ -1105,12 +1113,25 @@ function openEditGroupModal(groupId) {
     const brandedCb = document.getElementById('edit-group-branded');
     const brandUrlInput = document.getElementById('edit-group-brand-url');
     
+    const colorPicker = document.getElementById('header-color-picker');
+    const colorInput = document.getElementById('edit-group-color');
+    const clearColorBtn = document.getElementById('clear-header-color');
+
     brandedCb.checked = !!group.branded;
     brandUrlInput.value = group.brandUrl || '';
+    colorInput.value = group.headerColor || '#333333';
+
+    // Show brand URL when branded, show color picker when not branded
     brandUrlInput.style.display = group.branded ? '' : 'none';
-    
+    colorPicker.style.display = group.branded ? 'none' : 'flex';
+
     brandedCb.onchange = () => {
         brandUrlInput.style.display = brandedCb.checked ? '' : 'none';
+        colorPicker.style.display = brandedCb.checked ? 'none' : 'flex';
+    };
+
+    clearColorBtn.onclick = () => {
+        colorInput.value = '#333333';
     };
 
     const container = document.getElementById('group-links-container');
@@ -1338,6 +1359,8 @@ async function saveGroupEdit() {
     // Brand Data Handling
     const isBranded = document.getElementById('edit-group-branded').checked;
     const brandUrl = document.getElementById('edit-group-brand-url').value.trim();
+    const headerColorVal = document.getElementById('edit-group-color').value;
+    const headerColor = (!isBranded && headerColorVal && headerColorVal !== '#333333') ? headerColorVal : null;
     let brandData = null;
 
     // Save button state
@@ -1430,6 +1453,7 @@ async function saveGroupEdit() {
             appData.groups[groupIndex].branded = isBranded;
             appData.groups[groupIndex].brandUrl = brandUrl;
             appData.groups[groupIndex].brandData = brandData;
+            appData.groups[groupIndex].headerColor = headerColor;
             
             saveData();
             renderGrid();
@@ -1842,9 +1866,8 @@ function setupEventListeners() {
     // Move Group Modal Listeners
     document.getElementById('cancel-move-group').addEventListener('click', closeMoveGroupModal);
     
-    // Close modals on outside click
+    // Close modals on outside click (except edit group — use Cancel/Save buttons)
     window.addEventListener('click', (e) => {
-        if (e.target === editGroupModal) closeEditGroupModal();
         if (e.target === addGroupModal) closeAddGroupModal();
         if (e.target === settingsModal) closeSettingsModal();
         if (e.target === moveGroupModal) closeMoveGroupModal();
