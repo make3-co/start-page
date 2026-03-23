@@ -49,6 +49,9 @@ const PRESET_WALLPAPERS = [
 // Track selected wallpaper in settings
 let selectedWallpaperUrl = null;
 
+// Track whether server has OAuth configured (set by initAuth)
+let serverAuthEnabled = false;
+
 // Remove deprecated apps from enabledGoogleApps
 const APPS_TO_REMOVE = ["Search", "News", "Chat", "Contacts", "Photos", "Voice", "Shopping", "Keep", "Forms"];
 function cleanupApps() {
@@ -205,40 +208,36 @@ function withBrandfetchCache(url) {
 
 async function initAuth() {
     const signInBtn = document.getElementById('google-signin-btn');
+    const editBtn = document.getElementById('edit-mode-btn');
 
-    let googleOAuthEnabled = false;
+    // Check if server has OAuth configured
     try {
         const cfgRes = await fetch('/api/auth/config');
         if (cfgRes.ok) {
             const cfg = await cfgRes.json();
-            googleOAuthEnabled = !!cfg.googleOAuthEnabled;
+            serverAuthEnabled = !!cfg.googleOAuthEnabled;
         }
     } catch (e) {
         console.log('Auth config check failed', e);
     }
 
     const authed = await checkAuthSession();
-
     if (authed) {
+        // Signed in — hide sign-in, show edit/settings, refresh data
         if (signInBtn) signInBtn.classList.add('hidden');
         await refreshDataWithAuth();
+    } else if (serverAuthEnabled) {
+        // Auth is configured but user is not signed in — show only sign-in button
+        if (signInBtn) signInBtn.classList.remove('hidden');
+        if (editBtn) editBtn.classList.add('hidden');
+        if (settingsBtn) settingsBtn.classList.add('hidden');
+        // Re-apply privacy to hide controls
+        applyLoggedOutPrivacy(false);
     } else {
-        const authConfigured = !!(appData.authConfig && appData.authConfig.configured);
-
-        // Show Google sign-in when OAuth is set up on the server, or when KV auth is configured
-        if (signInBtn && (googleOAuthEnabled || authConfigured)) {
-            signInBtn.classList.remove('hidden');
-        }
-
-        // Open editing when server auth allow-list is not in effect yet
-        if (!authConfigured) {
-            const editBtn = document.getElementById('edit-mode-btn');
-            if (editBtn) editBtn.classList.remove('hidden');
-            // Hide sign-in only when there is nothing to sign in with (no OAuth env)
-            if (signInBtn && !googleOAuthEnabled) {
-                signInBtn.classList.add('hidden');
-            }
-        }
+        // No auth configured at all — open access mode
+        if (editBtn) editBtn.classList.remove('hidden');
+        if (settingsBtn) settingsBtn.classList.remove('hidden');
+        if (signInBtn) signInBtn.classList.add('hidden');
     }
 }
 
@@ -275,8 +274,8 @@ function updateAuthUI(isSignedIn) {
         if (isEditMode) toggleEditMode();
         
         if(signInBtnContainer) {
-            signInBtnContainer.style.display = 'block';
-            // Re-render button just in case? Not strictly necessary if it persists.
+            signInBtnContainer.style.display = '';
+            signInBtnContainer.classList.remove('hidden');
         }
     }
     updateSettingsVisibility(isSignedIn, canEdit);
@@ -322,7 +321,7 @@ async function logout() {
 
 function updateSettingsVisibility(isSignedIn, canEditOverride = null) {
     if (!settingsBtn) return;
-    const authConfigured = !!(appData && appData.authConfig && appData.authConfig.configured);
+    const authConfigured = serverAuthEnabled || !!(appData && appData.authConfig && appData.authConfig.configured);
     const canEdit = (canEditOverride !== null) ? canEditOverride : computeCanEdit(isSignedIn);
     const canAccessSettings = !authConfigured || (isSignedIn && canEdit);
     settingsBtn.classList.toggle('hidden', !canAccessSettings);
@@ -354,6 +353,16 @@ function applyLoggedOutPrivacy(isSignedIn) {
         document.querySelector('.search-container'),
         gridContainer
     ];
+    // Hide/show settings controls (edit, settings, logout) — but keep sign-in button visible
+    const settingsControls = document.querySelector('.settings-controls');
+    if (settingsControls) {
+        // Hide all children except the sign-in button
+        Array.from(settingsControls.children).forEach(child => {
+            if (child.id !== 'google-signin-btn') {
+                child.classList.toggle('hidden', shouldHide);
+            }
+        });
+    }
     elementsToHide.forEach(el => {
         if (!el) return;
         el.classList.toggle('hidden', shouldHide);
@@ -414,10 +423,8 @@ async function loadData() {
         loadFromLocalStorage();
     }
     
-    updateSettingsVisibility(isAuthenticated, computeCanEdit(isAuthenticated));
+    // Don't show settings/edit yet — initAuth will handle visibility after checking server config
     applyLoggedOutPrivacy(isAuthenticated);
-    // Safety: if content was hidden previously, ensure it is shown when signed in
-    forceShowContentIfVisibleState();
     
     cleanupApps();
     renderGrid();

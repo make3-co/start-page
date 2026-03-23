@@ -308,6 +308,10 @@ header {
     padding: 0;
 }
 
+.settings-controls button.hidden {
+    display: none;
+}
+
 .settings-controls button:hover {
     background: rgba(255, 255, 255, 0.15);
     color: #fff;
