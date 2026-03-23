@@ -2024,22 +2024,42 @@ body.edit-mode .add-group-card {
 @media (max-width: 800px) {
     header {
         grid-template-columns: 1fr auto;
-        gap: 10px;
-        padding: 20px 16px 12px;
+        gap: 6px;
+        padding: 16px 16px 10px;
     }
 
     .header-left {
         align-items: flex-start;
     }
 
+    .clock {
+        font-size: 2.8em;
+    }
+
+    .date-display {
+        font-size: 0.85em;
+    }
+
+    .weather {
+        font-size: 0.8em;
+    }
+
     .settings-controls {
         position: static;
-        padding-top: 0;
+        padding-top: 4px;
+        gap: 6px;
+    }
+
+    .settings-controls button {
+        width: 30px;
+        height: 30px;
+        font-size: 0.7em;
     }
 
     .search-container {
         grid-column: 1 / -1;
         order: 3;
+        padding-top: 6px;
     }
 
     .search-bar-wrapper {
@@ -2048,13 +2068,22 @@ body.edit-mode .add-group-card {
 
     .search-bar {
         border-radius: 10px;
+        padding: 9px 14px;
+        font-size: 0.85em;
     }
 
-    .clock {
-        font-size: 3em;
+    .apps-launcher-container {
+        margin-left: 8px;
+    }
+
+    .apps-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
     }
 
     .grid-container {
         padding: 0 16px 32px;
+        gap: 12px;
     }
 }
