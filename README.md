@@ -28,47 +28,53 @@ No frameworks. No build step. Just HTML, CSS, and JavaScript.
 
 ## Quick Start (5 minutes)
 
-You need a free [Cloudflare account](https://dash.cloudflare.com/sign-up) and [Node.js](https://nodejs.org/) installed.
+You need a free [Cloudflare account](https://dash.cloudflare.com/sign-up).
 
-### Step 1: Fork & Clone
+### Step 1: Fork This Repo
 
-1. Click **Fork** at the top of this page (this keeps you connected for future updates)
-2. Clone your fork:
+Click **Fork** at the top of this page. This creates your own copy that stays connected for future updates.
 
-```bash
-git clone https://github.com/YOUR_USERNAME/Start_page.git
-cd Start_page
-npm install
-```
+### Step 2: Deploy to Cloudflare
 
-### Step 2: Deploy
-
-```bash
-npm run setup
-```
-
-The setup script will:
-- Log you into Cloudflare (if needed)
-- Create a KV storage namespace
-- Ask how you want to sign in (password or Google)
-- Deploy to Cloudflare Workers
+1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com/) → **Workers & Pages** → **Create**
+2. Click the **"Connect to Git"** tab
+3. Select your **Start_page** fork
+4. Configure the build:
+   - **Build command:** `npm run deploy`
+   - **Build output:** leave empty
+5. Add a **KV namespace** binding:
+   - Go to **Settings → Bindings → Add → KV Namespace**
+   - Variable name: `START_PAGE_DATA`
+   - Select **Create a new namespace** or pick an existing one
+6. Trigger a redeploy from the **Deployments** tab
 
 ### Step 3: First Visit
 
-Visit your Workers URL (shown after deploy). A setup wizard will guide you:
+Visit your Workers URL. A setup wizard will guide you:
 
 - **Password** (simplest) — Just pick a password. No external setup needed.
-- **Google Sign-In** — Uses Google OAuth. The wizard shows you exactly what to configure, including your auto-detected redirect URI.
+- **Google Sign-In** — Paste your Google OAuth credentials right in the wizard. No CLI needed.
 
 That's it. Start adding your links.
 
 ### Getting Updates
 
-When new features are released, sync your fork on GitHub:
+When new features are released:
 
 1. Go to your fork on GitHub
 2. Click **"Sync fork"** → **"Update branch"**
-3. Pull locally and redeploy: `git pull && npm run deploy`
+3. Cloudflare will auto-deploy the update
+
+### Alternative: CLI Setup
+
+If you prefer the command line:
+
+```bash
+git clone https://github.com/YOUR_USERNAME/Start_page.git
+cd Start_page
+npm install
+npm run setup
+```
 
 ---
 
