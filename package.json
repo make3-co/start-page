@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev --port 8788",
-    "deploy": "wrangler deploy",
+    "deploy": "bash scripts/build-deploy.sh",
     "setup": "node scripts/setup.js",
     "dev:pages": "wrangler pages dev . --port 8788 --kv START_PAGE_DATA"
   },

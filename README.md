@@ -42,11 +42,9 @@ Click **Fork** at the top of this page. This creates your own copy that stays co
 4. Configure the build:
    - **Build command:** `npm run deploy`
    - **Build output:** leave empty
-5. Add a **KV namespace** binding:
-   - Go to **Settings → Bindings → Add → KV Namespace**
-   - Variable name: `START_PAGE_DATA`
-   - Select **Create a new namespace** or pick an existing one
-6. Trigger a redeploy from the **Deployments** tab
+5. Click **Save and Deploy**
+
+The first deploy will automatically create a KV namespace for your data.
 
 ### Step 3: First Visit
 
