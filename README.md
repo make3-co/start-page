@@ -26,6 +26,8 @@ No frameworks. No build step. Just HTML, CSS, and JavaScript.
 
 ---
 
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/csullivan145/Start_page)
+
 ## Quick Start (5 minutes)
 
 You need a free [Cloudflare account](https://dash.cloudflare.com/sign-up) and [Node.js](https://nodejs.org/) installed.
@@ -45,7 +47,16 @@ The setup script will:
 - Ask how you want to sign in (password or Google)
 - Deploy to Cloudflare Workers
 
-### Option B: Manual Setup
+### Option B: Deploy Button
+
+Click the **Deploy to Cloudflare Workers** button above. On the deploy form:
+- Select your Git account and create the KV namespace
+- **Leave GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET blank** (they're optional — only needed if you want Google Sign-In later)
+- Click **Create and deploy**
+
+After it deploys, visit your new Workers URL and the setup wizard will walk you through the rest.
+
+### Option C: Manual Setup
 
 ```bash
 git clone https://github.com/csullivan145/Start_page.git
