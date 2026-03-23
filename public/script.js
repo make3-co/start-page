@@ -2333,8 +2333,6 @@ function renderWallpaperGrid() {
             selectedWallpaperUrl = wp.url;
             selectedBackgroundColor = null;
             document.getElementById('custom-url-input').style.display = 'none';
-            const colorRow = document.getElementById('color-picker-input');
-            if (colorRow) colorRow.style.display = 'none';
             renderWallpaperGrid();
             document.body.style.backgroundColor = '';
             document.body.style.backgroundImage = `url('${wp.url}')`;
@@ -2342,19 +2340,34 @@ function renderWallpaperGrid() {
         grid.appendChild(thumb);
     });
 
-    // Solid Color tile
+    // Solid Color tile with embedded picker
     const isColor = !!selectedBackgroundColor;
     const colorThumb = document.createElement('div');
     colorThumb.className = 'wallpaper-thumb' + (isColor ? ' selected' : '');
+    const colorInput = document.createElement('input');
+    colorInput.type = 'color';
+    colorInput.className = 'wallpaper-color-input';
+    colorInput.value = selectedBackgroundColor || '#1a1a2e';
     colorThumb.innerHTML = `
         <div class="wallpaper-thumb-color" style="background:${selectedBackgroundColor || '#1a1a2e'}"></div>
         <div class="wp-check">✓</div>
         <div class="wp-name">Color</div>
     `;
-    colorThumb.addEventListener('click', () => {
+    colorThumb.querySelector('.wallpaper-thumb-color').appendChild(colorInput);
+    colorInput.addEventListener('input', (e) => {
+        const color = e.target.value;
+        colorThumb.querySelector('.wallpaper-thumb-color').style.background = color;
+        selectedBackgroundColor = color;
+        selectedWallpaperUrl = null;
         document.getElementById('custom-url-input').style.display = 'none';
-        document.getElementById('color-picker-input').style.display = 'flex';
-        document.getElementById('bg-color-picker').focus();
+        document.body.style.backgroundImage = 'none';
+        document.body.style.backgroundColor = color;
+        // Mark as selected
+        grid.querySelectorAll('.wallpaper-thumb').forEach(t => t.classList.remove('selected'));
+        colorThumb.classList.add('selected');
+    });
+    colorThumb.addEventListener('click', (e) => {
+        if (e.target !== colorInput) colorInput.click();
     });
     grid.appendChild(colorThumb);
 
@@ -2367,7 +2380,6 @@ function renderWallpaperGrid() {
         <div class="wp-name">Custom URL</div>
     `;
     customThumb.addEventListener('click', () => {
-        document.getElementById('color-picker-input').style.display = 'none';
         const urlRow = document.getElementById('custom-url-input');
         urlRow.style.display = 'flex';
         const urlInput = document.getElementById('wallpaper-custom-url');
@@ -2382,11 +2394,6 @@ function renderWallpaperGrid() {
     if (isCustom && !isColor && currentUrl) {
         document.getElementById('custom-url-input').style.display = 'flex';
         document.getElementById('wallpaper-custom-url').value = currentUrl;
-    }
-    // Pre-fill color picker if active
-    if (isColor) {
-        document.getElementById('color-picker-input').style.display = 'flex';
-        document.getElementById('bg-color-picker').value = selectedBackgroundColor;
     }
 }
 
@@ -2497,15 +2504,6 @@ function setupEventListeners() {
         }
     });
 
-    // Background color apply
-    document.getElementById('apply-bg-color').addEventListener('click', () => {
-        const color = document.getElementById('bg-color-picker').value;
-        selectedBackgroundColor = color;
-        selectedWallpaperUrl = null;
-        renderWallpaperGrid();
-        document.body.style.backgroundImage = 'none';
-        document.body.style.backgroundColor = color;
-    });
 
     // Add section from settings
     document.getElementById('add-section-settings-btn').addEventListener('click', () => {
