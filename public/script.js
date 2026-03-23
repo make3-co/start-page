@@ -1032,8 +1032,33 @@ function renderGrid() {
                         });
                     }
 
-                    // Render list with regular links
-                    if (regularSubLinks.length > 0 || largeSubLinks.length === 0) {
+                    if (link.sectionMode) {
+                        // Section mode: inline divider + title + links
+                        const section = document.createElement('div');
+                        section.className = 'list-section';
+
+                        const sectionTitle = document.createElement('div');
+                        sectionTitle.className = 'list-section-title';
+                        sectionTitle.textContent = link.name;
+                        section.appendChild(sectionTitle);
+
+                        regularSubLinks.forEach(subLink => {
+                            const a = document.createElement('a');
+                            a.className = 'link-item';
+                            a.href = isEditMode ? '#' : ensureProtocol(subLink.url);
+                            a.target = getLinkTarget();
+                            if (isEditMode) a.addEventListener('click', (e) => e.preventDefault());
+                            const iconElement = createLinkIcon(subLink.url, subLink.useFavicon);
+                            if (iconElement) a.appendChild(iconElement);
+                            const span = document.createElement('span');
+                            span.textContent = subLink.name;
+                            a.appendChild(span);
+                            section.appendChild(a);
+                        });
+
+                        body.appendChild(section);
+                    } else if (regularSubLinks.length > 0 || largeSubLinks.length === 0) {
+                        // Dropdown mode
                         const listContainer = document.createElement('div');
                         listContainer.className = 'list-container';
 
@@ -1409,8 +1434,8 @@ function openEditGroupModal(groupId) {
     group.links.forEach(link => {
         if (link.type === 'list') {
             // Add List Parent
-            addLinkRow(link.name, '', 'list');
-            
+            addLinkRow(link.name, '', 'list', false, false, link.sectionMode);
+
             // Add List Children
             if (link.links) {
                 link.links.forEach(sub => {
@@ -1425,7 +1450,7 @@ function openEditGroupModal(groupId) {
     editGroupModal.classList.remove('hidden');
 }
 
-function addLinkRow(name = '', url = '', type = 'link', useFavicon = false, largeIcon = false) {
+function addLinkRow(name = '', url = '', type = 'link', useFavicon = false, largeIcon = false, sectionMode = false) {
     const container = document.getElementById('group-links-container');
     const div = document.createElement('div');
     div.className = 'link-edit-row';
@@ -1461,6 +1486,11 @@ function addLinkRow(name = '', url = '', type = 'link', useFavicon = false, larg
         ? `<input type="text" class="link-url" placeholder="${placeholder}" value="${url}">`
         : '';
 
+    const sectionModeActive = sectionMode ? ' favicon-active' : '';
+    const sectionModePressed = sectionMode ? 'true' : 'false';
+    const sectionModeBtn = type === 'list'
+        ? `<button type="button" class="icon-btn section-mode-btn${sectionModeActive}" title="Show as section" aria-pressed="${sectionModePressed}"><i class="fas fa-minus"></i></button>`
+        : '';
     const convertBtnHtml = type === 'list'
         ? `<button type="button" class="icon-btn convert-list-btn" title="Convert to Group"><i class="fas fa-external-link-alt"></i></button>`
         : '';
@@ -1472,6 +1502,7 @@ function addLinkRow(name = '', url = '', type = 'link', useFavicon = false, larg
         <div class="row-actions">
             ${faviconBtn}
             ${largeIconBtn}
+            ${sectionModeBtn}
             ${convertBtnHtml}
             <button type="button" class="icon-btn delete-btn remove-link-btn" title="Remove"><i class="fas fa-trash"></i></button>
         </div>
@@ -1498,6 +1529,14 @@ function addLinkRow(name = '', url = '', type = 'link', useFavicon = false, larg
         });
     }
     
+    const secBtn = div.querySelector('.section-mode-btn');
+    if (secBtn) {
+        secBtn.addEventListener('click', () => {
+            secBtn.classList.toggle('favicon-active');
+            secBtn.setAttribute('aria-pressed', secBtn.classList.contains('favicon-active'));
+        });
+    }
+
     // Drag Events
     let isHandleClicked = false;
     const handle = div.querySelector('.handle');
@@ -1710,6 +1749,10 @@ async function saveGroupEdit() {
             const largeIconBtnEl = row.querySelector('.large-icon-btn');
             const largeIcon = largeIconBtnEl ? largeIconBtnEl.classList.contains('favicon-active') : false;
 
+            // Get section mode preference for lists
+            const sectionModeBtnEl = row.querySelector('.section-mode-btn');
+            const sectionMode = sectionModeBtnEl ? sectionModeBtnEl.classList.contains('favicon-active') : false;
+
             if (name) {
                 if (isList) {
                     // Create new List Object
@@ -1717,6 +1760,7 @@ async function saveGroupEdit() {
                         id: 'l' + Math.random().toString(36).substr(2, 9),
                         name: name,
                         type: 'list',
+                        sectionMode: sectionMode,
                         links: []
                     };
                     newLinks.push(currentListObj);

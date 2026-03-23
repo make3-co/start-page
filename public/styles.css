@@ -769,16 +769,31 @@ body.edit-mode .add-group-card {
     background: rgba(255,255,255,0.1);
 }
 
+/* List Section (inline) Styles */
+.list-section {
+    margin-top: 4px;
+}
+
+.list-section-title {
+    font-size: 0.7em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.45);
+    padding: 6px 10px 2px;
+    border-top: 0.5px solid rgba(255, 255, 255, 0.08);
+}
+
 /* Dropdown/List Styles */
 .list-container {
-    margin-bottom: 2px; /* Reduced from 4px */
+    margin-bottom: 2px;
     border-radius: 10px;
     overflow: visible;
     position: relative;
 }
 
 .list-header {
-    padding: 8px 10px; /* Reduced from 12px 15px */
+    padding: 8px 10px;
     background-color: transparent;
     cursor: pointer;
     font-weight: 500;
@@ -811,22 +826,19 @@ body.edit-mode .add-group-card {
 .list-items {
     display: none;
     position: absolute;
-    top: 50%; /* Overlap slightly */
-    left: 100%; /* Flyout to right? Or Standard dropdown? Reference had sidebar flyout. */
-    /* Let's stick to standard drop DOWN for grid layout, but styled like glass */
     top: 100%;
     left: 0;
     width: 100%;
     z-index: 100;
-    
-    background: rgba(30, 30, 30, 0.85);
+
+    background: rgba(40, 40, 45, 0.92);
     backdrop-filter: blur(40px) saturate(180%);
     -webkit-backdrop-filter: blur(40px) saturate(180%);
-    border: 0.5px solid var(--glass-border);
+    border: 0.5px solid rgba(255, 255, 255, 0.15);
     border-radius: 12px;
     padding: 5px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-    
+
     margin-top: 5px;
     animation: fadeIn 0.2s ease;
 }
