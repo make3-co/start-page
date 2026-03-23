@@ -43,7 +43,8 @@ export async function onRequestGet(context) {
   });
 
   if (!tokenRes.ok) {
-    return Response.redirect(`${frontendUrl}?error=token_exchange_failed`, 302);
+    const redirectUriEncoded = encodeURIComponent(GOOGLE_REDIRECT_URI);
+    return Response.redirect(`${frontendUrl}?error=token_exchange_failed&redirect_uri=${redirectUriEncoded}`, 302);
   }
 
   const tokens = await tokenRes.json();

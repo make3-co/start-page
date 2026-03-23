@@ -265,7 +265,52 @@ function showToast(message, type = 'error', duration = 3500) {
 }
 
 // --- Initialization ---
+function checkUrlErrors() {
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get('error');
+    if (!error) return;
+
+    // Clean URL
+    window.history.replaceState({}, '', window.location.pathname);
+
+    const redirectUri = params.get('redirect_uri');
+
+    const messages = {
+        token_exchange_failed: redirectUri
+            ? `Google Sign-In failed. Add this redirect URI in Google Cloud Console → OAuth Client → Authorized redirect URIs:\n\n${decodeURIComponent(redirectUri)}`
+            : 'Google Sign-In failed. Check that your redirect URI is configured in Google Cloud Console.',
+        invalid_state: 'Sign-in failed (invalid state). Please try again.',
+        unauthorized_email: 'Your email is not in the allowed list. Check Settings → Account.',
+        missing_code: 'Sign-in was cancelled.',
+        oauth_not_configured: 'Google OAuth is not configured. Set up your Client ID and Secret.',
+    };
+
+    if (error === 'token_exchange_failed' && redirectUri) {
+        // Show a persistent error with the redirect URI to copy
+        const uri = decodeURIComponent(redirectUri);
+        const banner = document.createElement('div');
+        banner.className = 'auth-error-banner';
+        banner.innerHTML = `
+            <div><strong>Google Sign-In failed.</strong> Add this as an Authorized redirect URI in <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a>:</div>
+            <div class="auth-error-uri" title="Click to copy">${uri}</div>
+            <div style="font-size:0.85em;opacity:0.7;">Click the URI to copy it. After adding it in Google Console, try signing in again.</div>
+            <button onclick="this.parentElement.remove()" style="position:absolute;top:8px;right:12px;background:none;border:none;color:#fff;font-size:1.2em;cursor:pointer;">✕</button>
+        `;
+        banner.querySelector('.auth-error-uri').addEventListener('click', () => {
+            navigator.clipboard.writeText(uri);
+            banner.querySelector('.auth-error-uri').textContent = 'Copied!';
+            setTimeout(() => { banner.querySelector('.auth-error-uri').textContent = uri; }, 2000);
+        });
+        document.body.appendChild(banner);
+        return;
+    }
+
+    const msg = messages[error] || `Sign-in error: ${error}`;
+    showToast(msg, 'error', 5000);
+}
+
 async function init() {
+    checkUrlErrors();
     await loadData();
     await loadConfig(); // runs after loadData so user's brandfetch key is available
     applyBackground();
