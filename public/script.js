@@ -851,10 +851,14 @@ function resizeGridItem(item) {
     const rowHeight = 1; 
     const desiredGap = 20; // The visual gap we want
 
-    // We use offsetHeight instead of getBoundingClientRect().height to avoid transform scaling issues.
-    // Formula: span * rowHeight >= contentHeight + desiredGap
-    // We add a buffer (+5px) for safety.
-    const rowSpan = Math.ceil((item.offsetHeight + desiredGap + 5) / rowHeight);
+    // Measure natural content height by summing child heights.
+    // We can't rely on offsetHeight/scrollHeight since the grid row constrains them.
+    let contentHeight = 0;
+    for (const child of item.children) {
+        contentHeight += child.offsetHeight;
+    }
+
+    const rowSpan = Math.ceil((contentHeight + desiredGap + 5) / rowHeight);
     
     item.style.gridRowEnd = "span " + rowSpan;
 }
@@ -1012,85 +1016,124 @@ function renderGrid() {
         const body = document.createElement('div');
         body.className = 'card-body';
 
+        // Collect large icon links to render in a grid at the bottom
+        const largeIconLinks = [];
+
         if (group.links) {
             group.links.forEach(link => {
                 if (link.type === 'list') {
-                    // Render a list (dropdown)
-                    const listContainer = document.createElement('div');
-                    listContainer.className = 'list-container';
-                    
-                    const listHeader = document.createElement('div');
-                    listHeader.className = 'list-header';
-                    listHeader.innerHTML = `
-                        <span>${link.name}</span>
-                        <i class="fas fa-chevron-down"></i>
-                    `;
-                    
-                    const listItems = document.createElement('div');
-                    listItems.className = 'list-items';
-                    
+                    // Separate large icon sub-links from regular ones
+                    const regularSubLinks = [];
+                    const largeSubLinks = [];
                     if (link.links) {
-                        link.links.forEach(subLink => {
+                        link.links.forEach(sub => {
+                            if (sub.largeIcon) largeSubLinks.push(sub);
+                            else regularSubLinks.push(sub);
+                        });
+                    }
+
+                    // Render list with regular links
+                    if (regularSubLinks.length > 0 || largeSubLinks.length === 0) {
+                        const listContainer = document.createElement('div');
+                        listContainer.className = 'list-container';
+
+                        const listHeader = document.createElement('div');
+                        listHeader.className = 'list-header';
+                        listHeader.innerHTML = `
+                            <span>${link.name}</span>
+                            <i class="fas fa-chevron-down"></i>
+                        `;
+
+                        const listItems = document.createElement('div');
+                        listItems.className = 'list-items';
+
+                        regularSubLinks.forEach(subLink => {
                             const a = document.createElement('a');
                             a.className = 'link-item';
                             a.href = isEditMode ? '#' : ensureProtocol(subLink.url);
                             a.target = getLinkTarget();
                             if (isEditMode) a.addEventListener('click', (e) => e.preventDefault());
-
-                            // Icon logic
                             const iconElement = createLinkIcon(subLink.url, subLink.useFavicon);
                             if (iconElement) a.appendChild(iconElement);
-
                             const span = document.createElement('span');
                             span.textContent = subLink.name;
                             a.appendChild(span);
-
                             listItems.appendChild(a);
                         });
-                    }
-                    
-                    listHeader.addEventListener('click', () => {
-                        const isOpen = listItems.classList.toggle('open');
-                        listHeader.classList.toggle('open');
-                        
-                        // Handle stacking context for popup
-                        if (isOpen) {
-                            card.style.zIndex = '100';
-                        } else {
-                            // Check if any other list in this card is open
-                            const openLists = card.querySelectorAll('.list-items.open');
-                            if (openLists.length === 0) {
-                                card.style.zIndex = '';
+
+                        listHeader.addEventListener('click', () => {
+                            const isOpen = listItems.classList.toggle('open');
+                            listHeader.classList.toggle('open');
+                            if (isOpen) {
+                                card.style.zIndex = '100';
+                            } else {
+                                const openLists = card.querySelectorAll('.list-items.open');
+                                if (openLists.length === 0) card.style.zIndex = '';
                             }
-                        }
-                    });
-                    
-                    listContainer.appendChild(listHeader);
-                    listContainer.appendChild(listItems);
-                    body.appendChild(listContainer);
-                    
+                        });
+
+                        listContainer.appendChild(listHeader);
+                        listContainer.appendChild(listItems);
+                        body.appendChild(listContainer);
+                    }
+
+                    // Collect large icon sub-links
+                    largeSubLinks.forEach(sub => largeIconLinks.push(sub));
+
+                } else if (link.largeIcon) {
+                    // Collect for grid
+                    largeIconLinks.push(link);
                 } else {
                     // Render a normal link
                     const a = document.createElement('a');
                     a.className = 'link-item';
                     a.href = isEditMode ? '#' : ensureProtocol(link.url);
-                    a.target = getLinkTarget(); 
-                    
-                    if (isEditMode) {
-                        a.addEventListener('click', (e) => e.preventDefault());
-                    }
-
-                    // Icon logic
+                    a.target = getLinkTarget();
+                    if (isEditMode) a.addEventListener('click', (e) => e.preventDefault());
                     const iconElement = createLinkIcon(link.url, link.useFavicon);
                     if (iconElement) a.appendChild(iconElement);
-
                     const span = document.createElement('span');
                     span.textContent = link.name;
                     a.appendChild(span);
-
                     body.appendChild(a);
                 }
             });
+        }
+
+        // Render large icon grid at the bottom
+        if (largeIconLinks.length > 0) {
+            const grid = document.createElement('div');
+            grid.className = 'large-icon-grid';
+            largeIconLinks.forEach(link => {
+                const a = document.createElement('a');
+                a.className = 'large-icon-item';
+                a.href = isEditMode ? '#' : ensureProtocol(link.url);
+                a.target = getLinkTarget();
+                if (isEditMode) a.addEventListener('click', (e) => e.preventDefault());
+
+                const iconDiv = document.createElement('div');
+                iconDiv.className = 'large-icon-img';
+
+                // Use the same icon logic as regular links
+                const iconElement = createLinkIcon(link.url, link.useFavicon);
+                if (iconElement) {
+                    // If it's an img, use it as a background
+                    if (iconElement.tagName === 'IMG') {
+                        iconDiv.style.backgroundImage = `url('${iconElement.src}')`;
+                    } else if (iconElement.style.backgroundImage) {
+                        iconDiv.style.backgroundImage = iconElement.style.backgroundImage;
+                    }
+                }
+
+                const label = document.createElement('span');
+                label.className = 'large-icon-label';
+                label.textContent = link.name;
+
+                a.appendChild(iconDiv);
+                a.appendChild(label);
+                grid.appendChild(a);
+            });
+            body.appendChild(grid);
         }
 
         // Apply section tint
@@ -1371,18 +1414,18 @@ function openEditGroupModal(groupId) {
             // Add List Children
             if (link.links) {
                 link.links.forEach(sub => {
-                    addLinkRow(sub.name, sub.url, 'sub-link', sub.useFavicon);
+                    addLinkRow(sub.name, sub.url, 'sub-link', sub.useFavicon, sub.largeIcon);
                 });
             }
         } else {
-            addLinkRow(link.name, link.url, 'link', link.useFavicon);
+            addLinkRow(link.name, link.url, 'link', link.useFavicon, link.largeIcon);
         }
     });
 
     editGroupModal.classList.remove('hidden');
 }
 
-function addLinkRow(name = '', url = '', type = 'link', useFavicon = false) {
+function addLinkRow(name = '', url = '', type = 'link', useFavicon = false, largeIcon = false) {
     const container = document.getElementById('group-links-container');
     const div = document.createElement('div');
     div.className = 'link-edit-row';
@@ -1405,8 +1448,13 @@ function addLinkRow(name = '', url = '', type = 'link', useFavicon = false) {
 
     const faviconActive = useFavicon ? ' favicon-active' : '';
     const faviconPressed = useFavicon ? 'true' : 'false';
+    const largeIconActive = largeIcon ? ' favicon-active' : '';
+    const largeIconPressed = largeIcon ? 'true' : 'false';
     const faviconBtn = type !== 'list'
         ? `<button type="button" class="icon-btn use-favicon-btn${faviconActive}" title="Use favicon" aria-pressed="${faviconPressed}"><i class="fas fa-image"></i></button>`
+        : '';
+    const largeIconBtn = type !== 'list'
+        ? `<button type="button" class="icon-btn large-icon-btn${largeIconActive}" title="Large icon" aria-pressed="${largeIconPressed}"><i class="fas fa-th-large"></i></button>`
         : '';
 
     const urlInput = type !== 'list'
@@ -1423,6 +1471,7 @@ function addLinkRow(name = '', url = '', type = 'link', useFavicon = false) {
         ${urlInput}
         <div class="row-actions">
             ${faviconBtn}
+            ${largeIconBtn}
             ${convertBtnHtml}
             <button type="button" class="icon-btn delete-btn remove-link-btn" title="Remove"><i class="fas fa-trash"></i></button>
         </div>
@@ -1433,6 +1482,19 @@ function addLinkRow(name = '', url = '', type = 'link', useFavicon = false) {
         favBtn.addEventListener('click', () => {
             favBtn.classList.toggle('favicon-active');
             favBtn.setAttribute('aria-pressed', favBtn.classList.contains('favicon-active'));
+        });
+    }
+
+    const lgIconBtn = div.querySelector('.large-icon-btn');
+    if (lgIconBtn) {
+        lgIconBtn.addEventListener('click', () => {
+            lgIconBtn.classList.toggle('favicon-active');
+            lgIconBtn.setAttribute('aria-pressed', lgIconBtn.classList.contains('favicon-active'));
+            // Auto-enable favicon when large icon is on
+            if (lgIconBtn.classList.contains('favicon-active') && favBtn && !favBtn.classList.contains('favicon-active')) {
+                favBtn.classList.add('favicon-active');
+                favBtn.setAttribute('aria-pressed', 'true');
+            }
         });
     }
     
@@ -1642,9 +1704,11 @@ async function saveGroupEdit() {
             const isList = row.classList.contains('list-row');
             const isSubLink = row.classList.contains('sub-link-row');
             
-            // Get favicon preference
+            // Get favicon and large icon preferences
             const faviconBtnEl = row.querySelector('.use-favicon-btn');
             const useFavicon = faviconBtnEl ? faviconBtnEl.classList.contains('favicon-active') : false;
+            const largeIconBtnEl = row.querySelector('.large-icon-btn');
+            const largeIcon = largeIconBtnEl ? largeIconBtnEl.classList.contains('favicon-active') : false;
 
             if (name) {
                 if (isList) {
@@ -1661,7 +1725,8 @@ async function saveGroupEdit() {
                     currentListObj.links.push({
                         name: name,
                         url: url,
-                        useFavicon: useFavicon
+                        useFavicon: useFavicon,
+                        largeIcon: largeIcon
                     });
                 } else {
                     // Top level link
@@ -1669,7 +1734,8 @@ async function saveGroupEdit() {
                         id: 'l' + Math.random().toString(36).substr(2, 9),
                         name: name,
                         url: url,
-                        useFavicon: useFavicon
+                        useFavicon: useFavicon,
+                        largeIcon: largeIcon
                     });
                     // Reset current list object because we hit a top level link
                     currentListObj = null;

@@ -652,6 +652,53 @@ body.edit-mode .group-handle {
     background-color: rgba(255, 255, 255, 0.08);
 }
 
+/* Large Icon Grid */
+.large-icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 4px;
+    padding: 8px 4px 4px;
+    border-top: 0.5px solid rgba(255, 255, 255, 0.08);
+    margin-top: 4px;
+}
+
+.large-icon-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 4px 8px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: background 0.12s;
+    cursor: pointer;
+}
+
+.large-icon-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.large-icon-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.large-icon-label {
+    font-size: 0.65em;
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    line-height: 1.2;
+}
+
 .link-icon {
     width: 20px;
     height: 20px;
