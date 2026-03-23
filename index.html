@@ -25,9 +25,14 @@
         </div>
 
         <div class="search-container">
-            <div class="search-bar">
-                <i class="fas fa-search"></i>
-                <input type="text" placeholder="Search google..." id="search-input">
+            <div class="search-bar-wrapper">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search google..." id="search-input" autocomplete="off">
+                </div>
+                <div id="search-dropdown" class="search-dropdown hidden">
+                    <!-- Suggestions injected by JS -->
+                </div>
             </div>
             <!-- Google Apps Launcher -->
             <div class="apps-launcher-container">

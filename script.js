@@ -2214,17 +2214,169 @@ function setupEventListeners() {
     });
 }
 
-// Search handling
+// Search handling with autocomplete
 const searchInput = document.getElementById('search-input');
-if(searchInput) {
-    searchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            const query = searchInput.value;
-            if(query) {
-                const target = getLinkTarget();
-                window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, target);
-                searchInput.value = '';
+const searchDropdown = document.getElementById('search-dropdown');
+let searchDebounceTimer = null;
+let activeSearchIndex = -1;
+
+function searchLinks(query) {
+    if (!query || !appData.groups) return [];
+    const q = query.toLowerCase();
+    const results = [];
+    appData.groups.forEach(group => {
+        if (!group.links) return;
+        const groupMatch = group.title && group.title.toLowerCase().includes(q);
+        group.links.forEach(link => {
+            if (link.type === 'list' && link.links) {
+                link.links.forEach(sub => {
+                    if (groupMatch ||
+                        (sub.name && sub.name.toLowerCase().includes(q)) ||
+                        (sub.url && sub.url.toLowerCase().includes(q))) {
+                        results.push({ name: sub.name, url: sub.url, group: group.title });
+                    }
+                });
+            } else if (groupMatch ||
+                       (link.name && link.name.toLowerCase().includes(q)) ||
+                       (link.url && link.url.toLowerCase().includes(q))) {
+                results.push({ name: link.name, url: link.url, group: group.title });
             }
+        });
+    });
+    return results.slice(0, 5);
+}
+
+async function fetchSuggestions(query) {
+    if (!query) return [];
+    try {
+        const res = await fetch(`/api/suggest?q=${encodeURIComponent(query)}`);
+        if (res.ok) return await res.json();
+    } catch (e) {}
+    return [];
+}
+
+function renderSearchDropdown(linkResults, suggestions, query) {
+    if (!searchDropdown) return;
+    if (!linkResults.length && !suggestions.length) {
+        searchDropdown.classList.add('hidden');
+        return;
+    }
+
+    let html = '';
+    activeSearchIndex = -1;
+
+    if (linkResults.length) {
+        html += '<div class="search-dropdown-section">Your Links</div>';
+        linkResults.forEach((link, i) => {
+            const domain = getDomain(link.url);
+            const favicon = domain ? `<img src="https://www.google.com/s2/favicons?domain=${domain}&sz=32" alt="">` : '<i class="fas fa-link"></i>';
+            html += `<div class="search-dropdown-item" data-index="${i}" data-type="link" data-url="${link.url}">
+                <span class="search-item-icon">${favicon}</span>
+                <span class="search-item-text">${link.name}</span>
+                <span class="search-item-group">${link.group}</span>
+            </div>`;
+        });
+    }
+
+    if (suggestions.length) {
+        if (linkResults.length) html += '<div class="search-dropdown-divider"></div>';
+        html += '<div class="search-dropdown-section">Google</div>';
+        suggestions.forEach((s, i) => {
+            const idx = linkResults.length + i;
+            html += `<div class="search-dropdown-item" data-index="${idx}" data-type="google" data-query="${s}">
+                <span class="search-item-icon"><i class="fas fa-search"></i></span>
+                <span class="search-item-text">${s}</span>
+            </div>`;
+        });
+    }
+
+    searchDropdown.innerHTML = html;
+    searchDropdown.classList.remove('hidden');
+
+    // Click handlers
+    searchDropdown.querySelectorAll('.search-dropdown-item').forEach(item => {
+        item.addEventListener('click', () => selectSearchItem(item));
+    });
+}
+
+function selectSearchItem(item) {
+    const type = item.dataset.type;
+    const target = getLinkTarget();
+    if (type === 'link') {
+        window.open(ensureProtocol(item.dataset.url), target);
+    } else {
+        window.open(`https://www.google.com/search?q=${encodeURIComponent(item.dataset.query)}`, target);
+    }
+    searchInput.value = '';
+    searchDropdown.classList.add('hidden');
+}
+
+function updateSearchHighlight() {
+    const items = searchDropdown.querySelectorAll('.search-dropdown-item');
+    items.forEach((el, i) => {
+        el.classList.toggle('active', i === activeSearchIndex);
+    });
+    if (activeSearchIndex >= 0 && items[activeSearchIndex]) {
+        items[activeSearchIndex].scrollIntoView({ block: 'nearest' });
+    }
+}
+
+if (searchInput) {
+    searchInput.addEventListener('input', () => {
+        const query = searchInput.value.trim();
+        clearTimeout(searchDebounceTimer);
+
+        if (!query) {
+            searchDropdown.classList.add('hidden');
+            return;
+        }
+
+        // Show link results immediately
+        const linkResults = searchLinks(query);
+        renderSearchDropdown(linkResults, [], query);
+
+        // Fetch Google suggestions with debounce
+        searchDebounceTimer = setTimeout(async () => {
+            const suggestions = await fetchSuggestions(query);
+            const freshLinkResults = searchLinks(searchInput.value.trim());
+            renderSearchDropdown(freshLinkResults, suggestions, searchInput.value.trim());
+        }, 200);
+    });
+
+    searchInput.addEventListener('keydown', (e) => {
+        const items = searchDropdown.querySelectorAll('.search-dropdown-item');
+        const isOpen = !searchDropdown.classList.contains('hidden') && items.length > 0;
+
+        if (e.key === 'ArrowDown' && isOpen) {
+            e.preventDefault();
+            activeSearchIndex = Math.min(activeSearchIndex + 1, items.length - 1);
+            updateSearchHighlight();
+        } else if (e.key === 'ArrowUp' && isOpen) {
+            e.preventDefault();
+            activeSearchIndex = Math.max(activeSearchIndex - 1, -1);
+            updateSearchHighlight();
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (activeSearchIndex >= 0 && items[activeSearchIndex]) {
+                selectSearchItem(items[activeSearchIndex]);
+            } else {
+                const query = searchInput.value.trim();
+                if (query) {
+                    window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, getLinkTarget());
+                    searchInput.value = '';
+                    searchDropdown.classList.add('hidden');
+                }
+            }
+        } else if (e.key === 'Escape') {
+            searchDropdown.classList.add('hidden');
+            activeSearchIndex = -1;
+        }
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.search-bar-wrapper')) {
+            searchDropdown.classList.add('hidden');
         }
     });
 }
