@@ -1,19 +1,22 @@
 # Start Page
 
-A customizable, minimal, and responsive start page for your browser. It features a clock, weather widget, Google search, Google Apps launcher, and a customizable grid of link groups. It is designed to be hosted on **Cloudflare Pages** and uses **Cloudflare KV** for syncing your configuration across devices.
+A customizable, minimal, and responsive start page for your browser. Features a clock, weather widget, Google search with live autocomplete, Google Apps launcher, and a customizable grid of link groups. Designed for **Cloudflare Pages** with **Cloudflare KV** for syncing across devices.
 
 ## Features
 
-- **Customizable Links:** Organize your favorite sites into groups and lists.
-- **Sync Across Devices:** Data is stored in Cloudflare KV, so your start page looks the same everywhere.
-- **Google Integration:**
-  - Google Search bar.
-  - Google Apps Launcher.
-  - Server-side Google OAuth for editing access (7-day session via httpOnly cookie).
-- **Edit Mode:** Easily add, edit, move, or delete groups and links directly from the UI.
-- **Weather & Clock:** Real-time local time and weather updates.
-- **Branded Groups:** Automatically fetch brand icons for group headers.
-- **Secure:** Google OAuth protection with allowed email list to prevent unauthorized changes.
+- **Customizable Links:** Organize sites into groups and lists with drag-and-drop reordering.
+- **Sections:** Group your card groups by category (e.g., "Clients", "Tools") with colored tint overlays.
+- **Live Search:** Search bar with Google autocomplete and instant search across your saved links.
+- **Sync Across Devices:** Data stored in Cloudflare KV — same layout everywhere.
+- **Google Integration:** Google Search, Apps Launcher, and server-side Google OAuth.
+- **Branded Groups:** Fetch brand colors, logos, and banners via Brandfetch API.
+- **Header Color:** Set custom header colors on non-branded groups.
+- **Background Wallpaper:** Choose from presets or set a custom URL.
+- **Typography:** Customize fonts and weights for clock, date, and links.
+- **Edit Mode:** Add, edit, move, or delete groups and links directly from the UI.
+- **Weather & Clock:** Real-time local time and weather.
+- **Privacy:** Hide all content when logged out.
+- **Apple-inspired Design:** Liquid glass UI with frosted glass cards, subtle animations, and iOS-style controls.
 
 ## Tech Stack
 
@@ -21,37 +24,26 @@ A customizable, minimal, and responsive start page for your browser. It features
 - **Hosting:** Cloudflare Pages.
 - **Backend/Storage:** Cloudflare Pages Functions + Cloudflare KV.
 - **Auth:** Server-side Google OAuth → JWT (HS256) in httpOnly cookie (7-day expiry).
+- **Design:** Liquid glass aesthetic with backdrop-filter, system fonts (SF Pro), and Apple HIG-inspired layout.
 
 ## Setup & Deployment
 
-This project is designed to be deployed to Cloudflare Pages.
-
 ### Prerequisites
 
-1.  A Cloudflare account.
-2.  Node.js and npm installed.
-3.  Wrangler CLI installed (`npm install -g wrangler`).
+1. A Cloudflare account.
+2. Node.js and npm installed.
+3. Wrangler CLI installed (`npm install -g wrangler`).
 
 ### 1. Local Development
-
-To run the project locally, use Wrangler (serves static files and `/functions`):
 
 ```bash
 npm install
 npm run dev
 ```
 
-`npm run dev` runs `wrangler pages dev` with **`--kv START_PAGE_DATA`** so the KV binding exists locally (Miniflare simulates it). Without that flag, `context.env.START_PAGE_DATA` is missing and OAuth callback would 500 when reading `authConfig`; `/api/data` would 404 until you bind KV.
+`npm run dev` runs `wrangler pages dev` with `--kv START_PAGE_DATA` so the KV binding exists locally.
 
-To use a custom port: `npx wrangler pages dev . --port 8788 --kv START_PAGE_DATA`.
-
-Use the **project’s** Wrangler (`npm install` adds it under `node_modules`). Run from this repo root (`npx wrangler …`), not a global `/usr/local/.../wrangler`, so the pinned version is used.
-
-**Wrangler is pinned to v3** (`package.json`) because **Wrangler 4 + Miniflare 4** can hit `ERR_REQUIRE_ESM` (Miniflare `require()`’s **youch**, which is ESM-only) on older Node (e.g. **v20.11**). Wrangler **3.114.x** uses Miniflare 3 and avoids that path. To use Wrangler 4 again, upgrade Node to a current **20.18+** or **22 LTS** and then `npm install wrangler@4` (re-test `pages dev`).
-
-The default port is **8788**. If you use another port (`--port 8790`), your Google redirect URI must use that same port.
-
-For Google sign-in locally, add a **`.dev.vars`** file in the project root (gitignored). Wrangler loads these as Worker secrets; `.env` alone does not supply `GOOGLE_*` / `JWT_SECRET` to auth routes:
+For Google sign-in locally, create a **`.dev.vars`** file (gitignored):
 
 ```
 GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
@@ -60,227 +52,137 @@ GOOGLE_REDIRECT_URI=http://localhost:8788/api/auth/callback
 JWT_SECRET=some-long-random-string
 ```
 
-In [Google Cloud Console](https://console.cloud.google.com/) → your OAuth client → **Authorized redirect URIs**, add the **exact** same URL as `GOOGLE_REDIRECT_URI` (including `http`, host, port, and path `/api/auth/callback`).
-
-Session cookies omit the `Secure` flag when the app is served over `http://` so the OAuth state cookie and JWT cookie work on localhost; production HTTPS still uses `Secure`.
-
-**Local troubleshooting**
-
-| Symptom | What to check |
-|--------|----------------|
-| `Google OAuth not configured` on `/api/auth/login` | Variables missing from `.dev.vars` — restart Wrangler after editing. |
-| Redirect back with `?error=invalid_state` | Usually cookies blocked; ensure you are not mixing hosts (e.g. `127.0.0.1` vs `localhost`). Stick to one. |
-| `?error=token_exchange_failed` | `GOOGLE_REDIRECT_URI` in `.dev.vars` must match the redirect URI in Google Console **and** the URL Google redirected to (same port). |
-| `?error=unauthorized_email` | KV `authConfig` allow-list in production; locally, KV may be empty or preview — see deployment docs. |
+Add `http://localhost:8788/api/auth/callback` to **Authorized redirect URIs** and `http://localhost:8788` to **Authorized JavaScript origins** in Google Cloud Console.
 
 ### 2. Cloudflare Pages Deployment
 
-#### Step A: Create the Project
-
-Deploy from the command line:
+#### Step A: Deploy
 
 ```bash
 npx wrangler pages deploy . --project-name my-start-page --branch production
 ```
 
-- **Production deploy:** use `--branch production`.
-- **Staging/Preview deploy:** use a different branch, e.g. `--branch staging`.
+#### Step B: Create & Bind KV
 
-#### Step B: Create a KV Namespace
+1. Cloudflare Dashboard → **Workers & Pages** → **KV** → Create namespace (e.g., `START_PAGE_DATA`).
+2. Pages project → **Settings** → **Functions** → **KV Namespace Bindings** → Variable name: `START_PAGE_DATA`.
 
-1.  Log in to the Cloudflare Dashboard.
-2.  Go to **Workers & Pages** > **KV**.
-3.  Create a new namespace (e.g., `START_PAGE_DATA`).
+#### Step C: Configure Google OAuth
 
-#### Step C: Bind KV to Pages
+1. **Google Cloud Console:**
+   - Create a project and configure the OAuth consent screen (set to **Production**).
+   - Create an OAuth 2.0 Client (Web Application).
+   - Add your domain to **Authorized JavaScript origins**.
+   - Add `https://your-domain.com/api/auth/callback` to **Authorized redirect URIs**.
 
-1.  Go to your Pages project settings in the Cloudflare Dashboard.
-2.  Navigate to **Settings** > **Functions**.
-3.  Scroll to **KV Namespace Bindings**.
-4.  Add a new binding:
-    - **Variable name:** `START_PAGE_DATA` (must be exact).
-    - **KV Namespace:** Select the namespace you created in Step B.
+2. **Set secrets:**
 
-#### Step D: Configure Google OAuth
+   ```bash
+   wrangler pages secret put GOOGLE_CLIENT_ID --project-name my-start-page
+   wrangler pages secret put GOOGLE_CLIENT_SECRET --project-name my-start-page
+   wrangler pages secret put GOOGLE_REDIRECT_URI --project-name my-start-page
+   wrangler pages secret put JWT_SECRET --project-name my-start-page
+   ```
 
-1.  **Google Cloud Console:**
-    - Create a project in the [Google Cloud Console](https://console.cloud.google.com/).
-    - Go to **Google Auth Platform** > **Branding** and configure the consent screen.
-    - Set publishing status to **Production** (under **Audience**).
-    - Go to **Clients** > **Create Client** (Web Application).
-    - Add your domain (e.g., `https://csullivan.me`) to **Authorized JavaScript origins**.
-    - Add `https://your-domain.com/api/auth/callback` to **Authorized redirect URIs**.
-    - Copy the **Client ID** and **Client Secret**.
+3. **Set allowed emails** — either in KV (`authConfig` key: `{"allowedEmails": ["you@email.com"]}`) or via Settings UI after first login.
 
-2.  **Set Secrets via Wrangler:**
+4. **Redeploy** after setting secrets.
 
-    ```bash
-    wrangler pages secret put GOOGLE_CLIENT_ID --project-name my-start-page
-    wrangler pages secret put GOOGLE_CLIENT_SECRET --project-name my-start-page
-    wrangler pages secret put GOOGLE_REDIRECT_URI --project-name my-start-page
-    wrangler pages secret put JWT_SECRET --project-name my-start-page
-    ```
+#### Step D: Brandfetch API (Optional)
 
-    - `GOOGLE_CLIENT_ID` — from Google Cloud Console
-    - `GOOGLE_CLIENT_SECRET` — from Google Cloud Console
-    - `GOOGLE_REDIRECT_URI` — `https://your-domain.com/api/auth/callback`
-    - `JWT_SECRET` — any random string (generate with `openssl rand -base64 32`)
+Branded group headers use the Brandfetch API. **No server-side secrets needed** — enter your API Key and Client ID in **Settings → Account → Brandfetch API**. Keys are stored in your app data and sync across devices.
 
-3.  **Set Allowed Emails (first time):**
+Get free keys at [brandfetch.com](https://brandfetch.com).
 
-    Either set directly in KV:
-    - Go to **Workers & Pages** > **KV** > Your Namespace.
-    - Add key: `authConfig`
-    - Value: `{"allowedEmails": ["your.email@gmail.com"]}`
+### 3. Settings
 
-    Or leave it empty and set via the Settings UI after first login (when no authConfig exists, the site allows open access so you can configure it from the UI).
+Settings are organized in a tabbed sidebar panel:
 
-4.  **Redeploy** after setting secrets:
+| Tab | What it controls |
+|-----|-----------------|
+| **Appearance** | Wallpaper, layout mode, typography (fonts/weights), sections manager |
+| **Google Apps** | Toggle which Google apps appear in the launcher |
+| **Account** | Allowed emails, hide-when-logged-out, Brandfetch API keys |
+| **Data** | Import/Export JSON, reset defaults |
 
-    ```bash
-    npx wrangler pages deploy . --project-name my-start-page --branch production
-    ```
+### 4. Sections
 
-#### Step E: Add Brandfetch Secrets (Optional — for branded icons)
+Sections let you visually group your card groups with colored tint overlays:
 
-Set these in **Settings** > **Environment variables** (both Production and Preview):
+1. **Create sections** in Settings → Appearance → Sections, or via the section dropdown in the Edit Group modal.
+2. **Assign groups** to sections in the Edit Group modal.
+3. Groups in the same section are automatically sorted together and share a colored glass tint.
+4. **Customize colors** in the Sections manager (Settings → Appearance).
 
-- **BRANDFETCH_API_KEY** (Secret)
-- **BRANDFETCH_CLIENT_ID** (Secret)
+### 5. Auth Flow
 
-Redeploy after adding.
+1. User clicks the Google icon (top right) → redirected to Google OAuth.
+2. Google redirects back to `/api/auth/callback` with an authorization code.
+3. Server exchanges code for user info, verifies email against allowed list.
+4. Server signs a JWT and sets it as an `httpOnly` cookie (7-day expiry).
+5. User is authenticated — edit button and settings become visible.
+6. On logout, the cookie is cleared via `POST /api/auth/logout`.
 
-### 3. Auth Flow
+### 6. Data Loading & Persistence
 
-1.  User clicks the Google icon (top right) → redirected to Google OAuth consent.
-2.  Google redirects back to `/api/auth/callback` with an authorization code.
-3.  Server exchanges the code for user info, verifies email against allowed list.
-4.  Server signs a JWT and sets it as an `httpOnly` cookie (7-day expiry).
-5.  User is now authenticated — edit button and settings become visible.
-6.  On logout, the cookie is cleared via `POST /api/auth/logout`.
+- Page load: `GET /api/data` (KV) → `localStorage` fallback → `default_data.js` fallback.
+- Edits save to KV (and localStorage if privacy mode is off).
+- KV data persists across deploys.
+- Sensitive fields (Brandfetch API keys) are stripped from unauthenticated responses.
 
-### 4. Usage
-
-1.  Open your deployed site.
-2.  Click the **Google icon** (top right) to sign in.
-3.  Once signed in, an **Edit** button (pencil icon) and **Settings** (gear) icon appear.
-4.  Toggle Edit Mode to add groups, rearrange links, or delete items.
-5.  To manage allowed emails or privacy settings, open Settings.
-6.  Changes are automatically saved to the cloud.
-
-### 5. Data Loading & Persistence
-
-- On page load the client tries `GET /api/data` (Cloudflare KV). If `appData` exists in KV, that is used.
-- If KV is empty or unreachable, it falls back to `localStorage` (`startPageData`).
-- If both KV and `localStorage` are empty, it falls back to `default_data.js` (shipped with the app).
-- Any edits save to both `localStorage` (for fast reloads) and KV (for persistence across deploys).
-- KV content is not overwritten by new deploys; it keeps the last saved data until you clear/replace it.
-
-**Privacy note:** Anything shipped in the static bundle (e.g., `default_data.js`) is visible via View Source/DevTools even if the UI hides it when logged out. To keep links private, avoid shipping real data in `default_data.js`; store real data in KV and require auth so only `/api/data` (with a valid session) returns the content.
+**Privacy:** When "Hide content when logged out" is enabled, unauthenticated visitors see only the sign-in button. Data is not cached in localStorage when privacy mode is on.
 
 ## Project Structure
 
-- `index.html` — Main entry point.
-- `styles.css` — All styling.
-- `script.js` — Frontend logic (UI rendering, event listeners, auth).
-- `default_data.js` — Default fallback data (used if KV is empty).
-- `functions/` — Backend (Cloudflare Pages Functions):
-  - `lib/jwt.js` — JWT signing and verification (HS256).
-  - `lib/oauth_env.js` — Trims OAuth secrets; optional KV `authConfig.clientId` fallback if `GOOGLE_CLIENT_ID` unset.
-  - `api/auth/login.js` — Redirects to Google OAuth.
-  - `api/auth/callback.js` — Exchanges code for token, sets JWT cookie.
-  - `api/auth/me.js` — Returns current user from JWT cookie.
-  - `api/auth/logout.js` — Clears the JWT cookie.
-  - `api/data.js` — GET/PUT for app data (Cloudflare KV).
-  - `api/auth_setup.js` — PUT to update allowed emails in KV.
-  - `api/brandfetch_config.js` — Exposes Brandfetch credentials to frontend.
+```
+index.html              — Main entry point
+styles.css              — All styling (liquid glass design)
+script.js               — Frontend logic, auth, search, settings
+default_data.js         — Fallback data when KV is empty
+functions/
+  lib/
+    jwt.js              — JWT signing/verification (HS256)
+    auth.js             — Cookie parsing, getAuthUser helper
+    cookies.js          — Set-Cookie builder (Secure flag handling)
+    kv.js               — KV binding helper
+    oauth_env.js        — OAuth credential loading
+  api/
+    auth/
+      login.js          — Redirects to Google OAuth
+      callback.js       — Exchanges code, sets JWT cookie
+      me.js             — Returns current user from cookie
+      logout.js         — Clears JWT cookie
+      config.js         — Returns OAuth configuration status
+    data.js             — GET/PUT app data (KV)
+    auth_setup.js       — PUT allowed emails (KV)
+    suggest.js          — Google autocomplete proxy
+    brandfetch_config.js — (Legacy) Brandfetch credentials endpoint
+```
 
 ## Migrating from Client-Side Google Sign-In
 
-If you previously had this project running with the old client-side Google Sign-In (GSI SDK), follow these steps to update to the new server-side OAuth flow.
+If upgrading from the old GSI SDK version:
 
-### What Changed
+1. `git pull origin main`
+2. Create Google OAuth Client with a **Client Secret** (old setup only needed Client ID).
+3. Add `https://your-domain.com/api/auth/callback` to redirect URIs.
+4. Set 4 secrets via `wrangler pages secret put` (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, JWT_SECRET).
+5. Update KV `authConfig` — remove `clientId`, keep `allowedEmails`.
+6. Redeploy and hard refresh.
 
-- **Old:** Google Identity Services (GSI) SDK in the browser used **`authConfig.clientId` from KV** (and the button was rendered by Google’s script). No client secret in your Worker.
-- **New:** Server-side OAuth Authorization Code flow. **`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GOOGLE_REDIRECT_URI`** must be set as **Cloudflare Pages secrets** (and the same values in **`.dev.vars`** for local Wrangler). The Worker reads them from the environment — they are **not** taken from `appData` in the browser anymore.
+See [detailed migration steps](#migrating-from-client-side-google-sign-in) in the previous README version if needed.
 
-If production sign-in works but local does not, your **`.dev.vars` Client ID is probably not the same string** as **Pages → Settings → Environment variables → `GOOGLE_CLIENT_ID`**. Copy the production value into `.dev.vars` (or from Google Cloud → Credentials → that Web client’s Client ID).
-
-**Legacy fallback:** If `GOOGLE_CLIENT_ID` is **missing** in the environment, the Worker falls back to **`clientId` on the KV `authConfig` object** (old GSI-era shape). That only helps when local/preview KV still contains `clientId` and you intentionally left the env var unset.
-
-### Migration Steps
-
-#### 1. Pull the Latest Code
-
-```bash
-git pull origin main
-```
-
-#### 2. Get a Google Client Secret
-
-The old setup only needed a Client ID. The new setup also requires a **Client Secret**.
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com/) → **APIs & Credentials**.
-2. Find your existing OAuth 2.0 Client (or create a new one — type: **Web application**).
-3. Add `https://your-domain.com/api/auth/callback` to **Authorized redirect URIs**.
-4. Make sure `https://your-domain.com` is in **Authorized JavaScript origins**.
-5. Copy the **Client ID** and **Client Secret**.
-
-> **Important:** If your OAuth consent screen is in **Testing** mode, either add your email as a test user (under **Audience**) or switch to **Production** mode.
-
-#### 3. Set Environment Secrets
-
-```bash
-wrangler pages secret put GOOGLE_CLIENT_ID --project-name your-project-name
-wrangler pages secret put GOOGLE_CLIENT_SECRET --project-name your-project-name
-wrangler pages secret put GOOGLE_REDIRECT_URI --project-name your-project-name
-wrangler pages secret put JWT_SECRET --project-name your-project-name
-```
-
-When prompted, enter:
-- `GOOGLE_CLIENT_ID` — your Client ID from step 2
-- `GOOGLE_CLIENT_SECRET` — your Client Secret from step 2
-- `GOOGLE_REDIRECT_URI` — `https://your-domain.com/api/auth/callback`
-- `JWT_SECRET` — generate one with `openssl rand -base64 32`
-
-#### 4. Update KV authConfig
-
-The old `authConfig` KV entry had a `clientId` field. The new format only uses `allowedEmails`.
-
-Go to **Cloudflare Dashboard** → **Workers & Pages** → **KV** → your namespace, and update the `authConfig` key:
-
-**Old format:**
-```json
-{"clientId": "xxx.apps.googleusercontent.com", "allowedEmails": ["you@example.com"]}
-```
-
-**New format:**
-```json
-{"allowedEmails": ["you@example.com"]}
-```
-
-Just remove the `clientId` field and keep `allowedEmails`.
-
-#### 5. Deploy
-
-```bash
-npx wrangler pages deploy . --project-name your-project-name --branch production
-```
-
-#### 6. Clear Browser Cache
-
-Hard refresh your site (`Cmd + Shift + R` / `Ctrl + Shift + R`) or open in an incognito window. The old cached JavaScript may still try to use the GSI SDK.
-
-### Troubleshooting
+## Troubleshooting
 
 | Problem | Solution |
 |---------|----------|
-| **`401: invalid_client` / "The OAuth client was not found"** | The **Client ID** sent to Google is wrong or not a **Web application** client for this project. Compare **Cloudflare `GOOGLE_CLIENT_ID`** (production) with **`.dev.vars`** locally — they must match the **Client ID** shown next to the **Client secret** you use. Remove stray spaces; restart Wrangler. Do not use Android/iOS client types for this flow. |
-| "The OAuth client was deleted" | Your old Google Client ID was deleted. Create a new one in Google Cloud Console. |
-| "Access blocked: Authorization Error" | Your OAuth consent screen isn't configured or is in Testing mode without your email as a test user. Go to Google Cloud Console → **Branding** / **Audience**. |
-| Google login button not visible | Hard refresh or try incognito. Old cached JS may be running. |
-| Sign-in redirects but nothing happens | Check that `GOOGLE_REDIRECT_URI` matches exactly what's in your Google Cloud Console authorized redirect URIs. |
-| 500 error on login | Secrets not set. Run `wrangler pages secret list --project-name your-project-name` to verify all 4 secrets exist. Then redeploy. |
+| `401: invalid_client` | Wrong Client ID. Compare Cloudflare secret with `.dev.vars` and Google Console. |
+| "OAuth client was deleted" | Create a new OAuth client in Google Cloud Console. |
+| "Access blocked" | OAuth consent screen not configured or in Testing mode. |
+| Buttons visible when logged out | Hard refresh — CSS may be cached. |
+| Branded groups not working | Add Brandfetch API Key and Client ID in Settings → Account. |
+| Weather not loading | Browser may be blocking geolocation. Falls back to NYC. |
+| Search autocomplete not working | The `/api/suggest` proxy requires the Pages Functions to be deployed. |
 
 ## License
 
