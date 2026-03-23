@@ -730,9 +730,15 @@ async function logout() {
         renderGoogleApps();
     }
 
-    // Show sign-in button again
-    const signInBtn = document.getElementById('google-signin-btn');
-    if (signInBtn) signInBtn.classList.remove('hidden');
+    // Show the correct sign-in button again
+    if (serverGoogleEnabled) {
+        const signInBtn = document.getElementById('google-signin-btn');
+        if (signInBtn) signInBtn.classList.remove('hidden');
+    }
+    if (serverPasswordEnabled) {
+        const pwBtn = document.getElementById('password-signin-btn');
+        if (pwBtn) pwBtn.classList.remove('hidden');
+    }
 
     updateSettingsVisibility(false);
     applyLoggedOutPrivacy(false);
@@ -782,11 +788,10 @@ function applyLoggedOutPrivacy(isSignedIn) {
     // Hide/show settings controls (edit, settings, logout) — but keep sign-in button visible
     const settingsControls = document.querySelector('.settings-controls');
     if (settingsControls) {
-        // Hide all children except the sign-in button
+        // Hide all children except sign-in buttons
         Array.from(settingsControls.children).forEach(child => {
-            if (child.id !== 'google-signin-btn') {
-                child.classList.toggle('hidden', shouldHide);
-            }
+            if (child.id === 'google-signin-btn' || child.id === 'password-signin-btn') return;
+            child.classList.toggle('hidden', shouldHide);
         });
     }
     elementsToHide.forEach(el => {
