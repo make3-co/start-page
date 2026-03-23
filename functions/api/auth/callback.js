@@ -60,14 +60,19 @@ export async function onRequestGet(context) {
 
   const profile = await userRes.json();
 
-  // Check allowed emails if configured (requires KV binding locally — see wrangler.toml)
+  // Check allowed emails — auto-lock to first sign-in if not configured
   const kv = getStartPageKv(context.env);
   const authConfig = kv ? await kv.get('authConfig', { type: 'json' }) : null;
-  if (authConfig) {
-    const allowList = (authConfig.allowedEmails || []).map(e => e.toLowerCase());
-    if (allowList.length && !allowList.includes(profile.email.toLowerCase())) {
+  if (authConfig && authConfig.allowedEmails && authConfig.allowedEmails.length) {
+    const allowList = authConfig.allowedEmails.map(e => e.toLowerCase());
+    if (!allowList.includes(profile.email.toLowerCase())) {
       return Response.redirect(`${frontendUrl}?error=unauthorized_email`, 302);
     }
+  } else if (kv) {
+    // First Google sign-in — auto-lock to this email
+    await kv.put('authConfig', JSON.stringify({
+      allowedEmails: [profile.email.toLowerCase()]
+    }));
   }
 
   // Sign our own JWT
