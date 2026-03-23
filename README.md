@@ -26,8 +26,6 @@ No frameworks. No build step. Just HTML, CSS, and JavaScript.
 
 ---
 
-[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/csullivan145/Start_page)
-
 ## Quick Start (5 minutes)
 
 You need a free [Cloudflare account](https://dash.cloudflare.com/sign-up) and [Node.js](https://nodejs.org/) installed.
