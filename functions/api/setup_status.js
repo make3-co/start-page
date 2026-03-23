@@ -8,8 +8,9 @@ export async function onRequestGet(context) {
   const env = context.env;
   const kv = getStartPageKv(env);
 
-  const hasGoogleClientId = !!String(env.GOOGLE_CLIENT_ID ?? '').trim();
-  const hasGoogleClientSecret = !!String(env.GOOGLE_CLIENT_SECRET ?? '').trim();
+  const clientId = String(env.GOOGLE_CLIENT_ID ?? '').trim();
+  const hasGoogleClientId = clientId.includes('.apps.googleusercontent.com');
+  const hasGoogleClientSecret = !!String(env.GOOGLE_CLIENT_SECRET ?? '').trim() && hasGoogleClientId;
   const googleConfigured = hasGoogleClientId && hasGoogleClientSecret;
 
   let passwordConfigured = false;

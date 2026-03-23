@@ -12,6 +12,9 @@ export async function getGoogleOAuthCredentials(context) {
   let clientId = String(env.GOOGLE_CLIENT_ID ?? '').trim();
   const clientSecret = String(env.GOOGLE_CLIENT_SECRET ?? '').trim();
 
+  // Validate that credentials look real (not placeholder dots from deploy tools)
+  if (clientId && !clientId.includes('.apps.googleusercontent.com')) clientId = '';
+
   // Auto-derive redirect URI from request if not explicitly set
   let redirectUri = String(env.GOOGLE_REDIRECT_URI ?? '').trim();
   if (!redirectUri && context.request) {
