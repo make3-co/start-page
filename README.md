@@ -203,4 +203,4 @@ wrangler.toml               Cloudflare Worker config
 
 ## License
 
-Personal use.
+MIT — see [LICENSE](LICENSE).
