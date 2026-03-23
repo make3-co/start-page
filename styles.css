@@ -1466,6 +1466,38 @@ body.edit-mode .add-group-card {
     resize: vertical;
 }
 
+/* Settings panel buttons (apply, copy, etc.) */
+.settings-panel .btn {
+    padding: 7px 16px;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.82em;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    transition: all 0.12s;
+}
+
+.settings-panel .btn-primary {
+    background: #007aff;
+    color: #fff;
+    font-weight: 600;
+}
+
+.settings-panel .btn-primary:hover {
+    background: #0066d6;
+}
+
+.settings-panel .btn-secondary {
+    background: rgba(0, 0, 0, 0.05);
+    color: #1d1d1f;
+}
+
+.settings-panel .btn-secondary:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
 .settings-radio-group {
     display: flex;
     flex-direction: column;
