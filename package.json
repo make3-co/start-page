@@ -2,9 +2,11 @@
   "name": "start-page",
   "private": true,
   "description": "Personal start page (Cloudflare Worker + KV)",
+  "type": "module",
   "scripts": {
     "dev": "wrangler dev --port 8788",
     "deploy": "wrangler deploy",
+    "setup": "node scripts/setup.js",
     "dev:pages": "wrangler pages dev . --port 8788 --kv START_PAGE_DATA"
   },
   "devDependencies": {

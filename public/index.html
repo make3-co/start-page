@@ -52,6 +52,9 @@
             <button id="google-signin-btn" title="Sign in with Google" class="hidden" onclick="window.location.href='/api/auth/login'">
                 <i class="fab fa-google"></i>
             </button>
+            <button id="password-signin-btn" title="Sign in" class="hidden">
+                <i class="fas fa-lock"></i>
+            </button>
             
             <button id="edit-mode-btn" title="Toggle Edit Mode" class="hidden"><i class="fas fa-edit"></i></button>
             <button id="settings-btn" title="Settings" class="hidden"><i class="fas fa-cog"></i></button>
@@ -252,6 +255,104 @@
                     <button id="close-settings" class="btn btn-cancel">Close</button>
                     <button id="save-settings" class="btn btn-primary">Save</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Login Modal -->
+    <div id="password-login-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 340px;">
+            <h3 style="text-align:center; margin-bottom: 16px;"><i class="fas fa-lock" style="margin-right:8px;"></i>Sign In</h3>
+            <input type="password" id="password-login-input" class="setup-input" placeholder="Password" style="margin-bottom:8px;">
+            <p id="password-login-error" class="setup-error hidden"></p>
+            <div class="modal-actions" style="justify-content:center;">
+                <button id="password-login-submit" class="primary-btn" style="width:100%;">Sign In</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Setup Wizard -->
+    <div id="setup-wizard" class="setup-wizard hidden">
+        <div class="setup-card">
+            <div class="setup-header">
+                <h1>Welcome to Start Page</h1>
+                <p>Let's get you set up in under a minute.</p>
+            </div>
+
+            <!-- Step 1: Choose auth method -->
+            <div class="setup-step" data-step="auth-choice">
+                <div class="setup-section-label">How do you want to sign in?</div>
+                <div class="setup-options">
+                    <button class="setup-option" data-auth="password">
+                        <i class="fas fa-lock"></i>
+                        <span class="setup-option-title">Password</span>
+                        <span class="setup-option-desc">Simple. Just set a password.</span>
+                    </button>
+                    <button class="setup-option" data-auth="google">
+                        <i class="fab fa-google"></i>
+                        <span class="setup-option-title">Google Sign-In</span>
+                        <span class="setup-option-desc">Use your Google account.</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2a: Password setup -->
+            <div class="setup-step hidden" data-step="password">
+                <div class="setup-section-label">Set your password</div>
+                <input type="password" id="setup-password" class="setup-input" placeholder="Password (6+ characters)">
+                <input type="password" id="setup-password-confirm" class="setup-input" placeholder="Confirm password">
+                <p id="setup-password-error" class="setup-error hidden"></p>
+                <div class="setup-actions">
+                    <button class="setup-back-btn" data-back="auth-choice"><i class="fas fa-arrow-left"></i> Back</button>
+                    <button id="setup-password-submit" class="setup-primary-btn">Set Password & Sign In</button>
+                </div>
+            </div>
+
+            <!-- Step 2b: Google OAuth instructions -->
+            <div class="setup-step hidden" data-step="google">
+                <div class="setup-section-label">Set up Google Sign-In</div>
+                <p class="setup-hint">You'll need a <a href="https://console.cloud.google.com/" target="_blank">Google Cloud</a> project with OAuth credentials.</p>
+                <div class="setup-instructions">
+                    <div class="setup-instruction-step">
+                        <span class="setup-step-num">1</span>
+                        <span>Create an OAuth 2.0 Client in Google Cloud Console</span>
+                    </div>
+                    <div class="setup-instruction-step">
+                        <span class="setup-step-num">2</span>
+                        <div>
+                            <span>Add this as an <strong>Authorized redirect URI</strong>:</span>
+                            <div class="setup-copy-box">
+                                <code id="setup-callback-url"></code>
+                                <button class="setup-copy-btn" title="Copy"><i class="fas fa-copy"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="setup-instruction-step">
+                        <span class="setup-step-num">3</span>
+                        <span>Add the Client ID and Secret as Wrangler secrets:</span>
+                    </div>
+                </div>
+                <div class="setup-code-block">
+                    <code>npx wrangler secret put GOOGLE_CLIENT_ID</code><br>
+                    <code>npx wrangler secret put GOOGLE_CLIENT_SECRET</code>
+                </div>
+                <div class="setup-instruction-step" style="margin-top: 12px;">
+                    <span class="setup-step-num">4</span>
+                    <span>Redeploy: <code>npm run deploy</code></span>
+                </div>
+                <p class="setup-hint" style="margin-top: 12px;">After redeploying, refresh this page. The Google sign-in button will appear.</p>
+                <div class="setup-actions">
+                    <button class="setup-back-btn" data-back="auth-choice"><i class="fas fa-arrow-left"></i> Back</button>
+                    <button class="setup-skip-btn" id="setup-skip-google">I'll do this later</button>
+                </div>
+            </div>
+
+            <!-- Step: Done -->
+            <div class="setup-step hidden" data-step="done">
+                <div class="setup-done-icon"><i class="fas fa-check-circle"></i></div>
+                <h2>You're all set!</h2>
+                <p class="setup-hint">Start adding your links and make this page yours.</p>
+                <button id="setup-done-btn" class="setup-primary-btn">Get Started</button>
             </div>
         </div>
     </div>

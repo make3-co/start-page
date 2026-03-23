@@ -4,10 +4,13 @@ import { onRequestGet as authCallbackGet } from '../functions/api/auth/callback.
 import { onRequestGet as authMeGet } from '../functions/api/auth/me.js';
 import { onRequestPost as authLogoutPost } from '../functions/api/auth/logout.js';
 import { onRequestGet as authConfigGet } from '../functions/api/auth/config.js';
+import { onRequestPost_setup as passwordSetupPost } from '../functions/api/auth/password.js';
+import { onRequestPost_login as passwordLoginPost } from '../functions/api/auth/password.js';
 import { onRequestGet as dataGet, onRequestPut as dataPut } from '../functions/api/data.js';
 import { onRequestPut as authSetupPut } from '../functions/api/auth_setup.js';
 import { onRequestGet as suggestGet } from '../functions/api/suggest.js';
 import { onRequestGet as brandfetchConfigGet } from '../functions/api/brandfetch_config.js';
+import { onRequestGet as setupStatusGet } from '../functions/api/setup_status.js';
 
 // Build a Pages-compatible context from the Worker request and env
 function buildContext(request, env, ctx) {
@@ -30,12 +33,19 @@ export default {
       if (path === '/api/auth/logout' && method === 'POST') return authLogoutPost(context);
       if (path === '/api/auth/config' && method === 'GET') return authConfigGet(context);
 
+      // Password auth
+      if (path === '/api/auth/password-setup' && method === 'POST') return passwordSetupPost(context);
+      if (path === '/api/auth/password-login' && method === 'POST') return passwordLoginPost(context);
+
       // Data routes
       if (path === '/api/data' && method === 'GET') return dataGet(context);
       if (path === '/api/data' && method === 'PUT') return dataPut(context);
 
       // Auth setup
       if (path === '/api/auth_setup' && method === 'PUT') return authSetupPut(context);
+
+      // Setup status
+      if (path === '/api/setup/status' && method === 'GET') return setupStatusGet(context);
 
       // Suggest (Google autocomplete proxy)
       if (path === '/api/suggest' && method === 'GET') return suggestGet(context);

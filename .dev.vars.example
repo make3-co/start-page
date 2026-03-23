@@ -1,0 +1,7 @@
+# Copy this file to .dev.vars for local development
+# Only needed if using Google Sign-In (password auth needs no config)
+
+GOOGLE_CLIENT_ID=your-client-id-here
+GOOGLE_CLIENT_SECRET=your-client-secret-here
+
+# JWT_SECRET and GOOGLE_REDIRECT_URI are auto-generated — no need to set them

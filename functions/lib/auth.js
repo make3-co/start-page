@@ -1,4 +1,5 @@
 import { verifyJwt } from './jwt.js';
+import { getJwtSecret } from './oauth_env.js';
 
 export function getCookie(request, name) {
   const cookies = request.headers.get('Cookie') || '';
@@ -9,7 +10,7 @@ export function getCookie(request, name) {
 export async function getAuthUser(context) {
   const token = getCookie(context.request, 'token');
   if (!token) return null;
-  const secret = String(context.env.JWT_SECRET ?? '').trim();
+  const secret = await getJwtSecret(context.env);
   if (!secret) return null;
   return verifyJwt(token, secret);
 }

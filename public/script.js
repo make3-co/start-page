@@ -273,6 +273,7 @@ async function init() {
     startClock();
     fetchWeather();
     setupEventListeners();
+    initPasswordLogin();
 
     // Initialize cookie-based auth
     await initAuth();
@@ -373,37 +374,211 @@ function withBrandfetchCache(url) {
 
 async function initAuth() {
     const signInBtn = document.getElementById('google-signin-btn');
+    const passwordSignInBtn = document.getElementById('password-signin-btn');
     const editBtn = document.getElementById('edit-mode-btn');
 
-    // Check if server has OAuth configured
+    let googleEnabled = false;
+    let passwordEnabled = false;
+    let setupComplete = false;
+
+    // Check auth config
     try {
         const cfgRes = await fetch('/api/auth/config');
         if (cfgRes.ok) {
             const cfg = await cfgRes.json();
-            serverAuthEnabled = !!cfg.googleOAuthEnabled;
+            googleEnabled = !!cfg.googleOAuthEnabled;
+            passwordEnabled = !!cfg.passwordAuthEnabled;
+            setupComplete = !!cfg.setupComplete;
+            serverAuthEnabled = googleEnabled || passwordEnabled;
         }
     } catch (e) {
         console.log('Auth config check failed', e);
     }
 
+    // Show setup wizard if no auth is configured
+    if (!setupComplete) {
+        initSetupWizard();
+        return;
+    }
+
     const authed = await checkAuthSession();
     if (authed) {
-        // Signed in — hide sign-in, show edit/settings, refresh data
+        // Signed in — hide sign-in buttons, show edit/settings, refresh data
         if (signInBtn) signInBtn.classList.add('hidden');
+        if (passwordSignInBtn) passwordSignInBtn.classList.add('hidden');
         await refreshDataWithAuth();
     } else if (serverAuthEnabled) {
-        // Auth is configured but user is not signed in — show only sign-in button
-        if (signInBtn) signInBtn.classList.remove('hidden');
+        // Auth configured but not signed in — show appropriate sign-in button
+        if (googleEnabled && signInBtn) signInBtn.classList.remove('hidden');
+        if (passwordEnabled && passwordSignInBtn) passwordSignInBtn.classList.remove('hidden');
         if (editBtn) editBtn.classList.add('hidden');
         if (settingsBtn) settingsBtn.classList.add('hidden');
-        // Re-apply privacy to hide controls
         applyLoggedOutPrivacy(false);
     } else {
-        // No auth configured at all — open access mode
+        // No auth configured — open access mode
         if (editBtn) editBtn.classList.remove('hidden');
         if (settingsBtn) settingsBtn.classList.remove('hidden');
         if (signInBtn) signInBtn.classList.add('hidden');
+        if (passwordSignInBtn) passwordSignInBtn.classList.add('hidden');
     }
+}
+
+// ---- Setup Wizard ----
+async function initSetupWizard() {
+    const wizard = document.getElementById('setup-wizard');
+    if (!wizard) return;
+
+    // Fetch callback URL for Google OAuth instructions
+    try {
+        const res = await fetch('/api/setup/status');
+        if (res.ok) {
+            const status = await res.json();
+            const callbackUrlEl = document.getElementById('setup-callback-url');
+            if (callbackUrlEl) callbackUrlEl.textContent = status.callbackUrl;
+        }
+    } catch (e) { /* ignore */ }
+
+    wizard.classList.remove('hidden');
+
+    function showStep(stepName) {
+        wizard.querySelectorAll('.setup-step').forEach(s => s.classList.add('hidden'));
+        wizard.querySelector(`.setup-step[data-step="${stepName}"]`).classList.remove('hidden');
+    }
+
+    // Auth choice buttons
+    wizard.querySelectorAll('.setup-option').forEach(btn => {
+        btn.addEventListener('click', () => showStep(btn.dataset.auth));
+    });
+
+    // Back buttons
+    wizard.querySelectorAll('.setup-back-btn').forEach(btn => {
+        btn.addEventListener('click', () => showStep(btn.dataset.back));
+    });
+
+    // Copy callback URL
+    const copyBtn = wizard.querySelector('.setup-copy-btn');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', () => {
+            const url = document.getElementById('setup-callback-url').textContent;
+            navigator.clipboard.writeText(url);
+            copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+            setTimeout(() => { copyBtn.innerHTML = '<i class="fas fa-copy"></i>'; }, 2000);
+        });
+    }
+
+    // Password setup
+    const passwordSubmit = document.getElementById('setup-password-submit');
+    if (passwordSubmit) {
+        passwordSubmit.addEventListener('click', async () => {
+            const pw = document.getElementById('setup-password').value;
+            const confirm = document.getElementById('setup-password-confirm').value;
+            const errorEl = document.getElementById('setup-password-error');
+            errorEl.classList.add('hidden');
+
+            if (pw.length < 6) {
+                errorEl.textContent = 'Password must be at least 6 characters.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+            if (pw !== confirm) {
+                errorEl.textContent = 'Passwords do not match.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            passwordSubmit.disabled = true;
+            passwordSubmit.textContent = 'Setting up...';
+
+            try {
+                const res = await fetch('/api/auth/password-setup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: pw }),
+                });
+                if (res.ok) {
+                    showStep('done');
+                } else {
+                    const data = await res.json();
+                    errorEl.textContent = data.error || 'Setup failed.';
+                    errorEl.classList.remove('hidden');
+                }
+            } catch (e) {
+                errorEl.textContent = 'Network error.';
+                errorEl.classList.remove('hidden');
+            }
+            passwordSubmit.disabled = false;
+            passwordSubmit.textContent = 'Set Password & Sign In';
+        });
+    }
+
+    // Skip Google setup
+    const skipGoogle = document.getElementById('setup-skip-google');
+    if (skipGoogle) {
+        skipGoogle.addEventListener('click', () => {
+            wizard.classList.add('hidden');
+        });
+    }
+
+    // Done button
+    const doneBtn = document.getElementById('setup-done-btn');
+    if (doneBtn) {
+        doneBtn.addEventListener('click', () => {
+            wizard.classList.add('hidden');
+            location.reload();
+        });
+    }
+}
+
+// ---- Password Login ----
+function initPasswordLogin() {
+    const btn = document.getElementById('password-signin-btn');
+    const modal = document.getElementById('password-login-modal');
+    const input = document.getElementById('password-login-input');
+    const submit = document.getElementById('password-login-submit');
+    const errorEl = document.getElementById('password-login-error');
+    if (!btn || !modal) return;
+
+    btn.addEventListener('click', () => {
+        modal.classList.remove('hidden');
+        input.value = '';
+        errorEl.classList.add('hidden');
+        setTimeout(() => input.focus(), 100);
+    });
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.classList.add('hidden');
+    });
+
+    async function doLogin() {
+        errorEl.classList.add('hidden');
+        const pw = input.value;
+        if (!pw) return;
+
+        submit.disabled = true;
+        try {
+            const res = await fetch('/api/auth/password-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: pw }),
+            });
+            if (res.ok) {
+                location.reload();
+            } else {
+                const data = await res.json();
+                errorEl.textContent = data.error || 'Invalid password.';
+                errorEl.classList.remove('hidden');
+            }
+        } catch (e) {
+            errorEl.textContent = 'Network error.';
+            errorEl.classList.remove('hidden');
+        }
+        submit.disabled = false;
+    }
+
+    submit.addEventListener('click', doLogin);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') doLogin();
+    });
 }
 
 

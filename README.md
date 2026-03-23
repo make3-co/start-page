@@ -15,57 +15,49 @@ Built with an Apple-inspired "liquid glass" design. Syncs across all your device
 - **Sections** — Color-code groups of cards (e.g., all client cards get a blue tint).
 - **Custom backgrounds** — Pick from presets or use any image URL.
 - **Custom fonts** — Change the clock, date, and link fonts.
-- **Private** — Everything is hidden until you sign in with Google.
+- **Private** — Password or Google sign-in. Only you can edit your page.
 - **Synced** — Changes save to the cloud and show up on all your devices.
 
 ## How It's Built
 
-This runs on [Cloudflare Workers](https://workers.cloudflare.com/) (free tier). Your data is stored in [Cloudflare KV](https://developers.cloudflare.com/kv/). Sign-in uses Google OAuth so only you can edit your page.
+This runs on [Cloudflare Workers](https://workers.cloudflare.com/) (free tier). Your data is stored in [Cloudflare KV](https://developers.cloudflare.com/kv/).
 
 No frameworks. No build step. Just HTML, CSS, and JavaScript.
 
 ---
 
-## Setup Guide
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/csullivan145/Start_page)
 
-This will take about 15 minutes. You'll need:
-- A free [Cloudflare account](https://dash.cloudflare.com/sign-up)
-- A free [Google Cloud account](https://console.cloud.google.com/) (for sign-in)
-- [Node.js](https://nodejs.org/) installed on your computer
+## Quick Start (5 minutes)
 
-### Step 1: Get the Code
+You need a free [Cloudflare account](https://dash.cloudflare.com/sign-up) and [Node.js](https://nodejs.org/) installed.
 
-Open your terminal and run:
+### Option A: One-Command Setup
 
 ```bash
 git clone https://github.com/csullivan145/Start_page.git
 cd Start_page
 npm install
+npm run setup
 ```
 
-### Step 2: Log in to Cloudflare
+The setup script will:
+- Log you into Cloudflare (if needed)
+- Create a KV storage namespace
+- Ask how you want to sign in (password or Google)
+- Deploy to Cloudflare Workers
+
+### Option B: Manual Setup
 
 ```bash
+git clone https://github.com/csullivan145/Start_page.git
+cd Start_page
+npm install
 npx wrangler login
-```
-
-This opens your browser. Sign in to Cloudflare and authorize Wrangler.
-
-### Step 3: Create Storage
-
-Your links and settings need a place to live. Run this to create a storage namespace:
-
-```bash
 npx wrangler kv namespace create START_PAGE_DATA
 ```
 
-You'll see output like:
-
-```
-{ binding = "START_PAGE_DATA", id = "abc123def456..." }
-```
-
-**Copy that `id` value.** Open `wrangler.toml` and replace the existing ID:
+Copy the KV namespace `id` from the output into `wrangler.toml`:
 
 ```toml
 [[kv_namespaces]]
@@ -73,46 +65,54 @@ binding = "START_PAGE_DATA"
 id = "paste-your-id-here"
 ```
 
-### Step 4: Set Up Google Sign-In
+Then deploy:
 
-This lets you log in to edit your start page. Only you (or emails you allow) can make changes.
+```bash
+npm run deploy
+```
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project (call it anything, like "Start Page")
-3. In the left sidebar, go to **Google Auth Platform → Branding**
-   - Fill in the app name and your email
-   - Click **Save**
-4. Go to **Audience** (left sidebar)
-   - Click **Publish App** (or add your email as a test user)
-5. Go to **Clients** (left sidebar)
-   - Click **+ Create Client**
-   - Choose **Web application**
-   - Under **Authorized JavaScript origins**, add: `https://yourdomain.com`
-   - Under **Authorized redirect URIs**, add: `https://yourdomain.com/api/auth/callback`
-   - Click **Create**
-6. You'll see a **Client ID** and **Client Secret** — keep these handy
+### First Visit
 
-### Step 5: Add Your Secrets
+After deploying, visit your Workers URL. A setup wizard will guide you through choosing an auth method:
 
-Run each of these commands and paste the value when prompted:
+- **Password** (simplest) — Just pick a password. No external setup needed.
+- **Google Sign-In** — Uses Google OAuth. The wizard shows you exactly what to configure, including your auto-detected redirect URI.
+
+That's it. Start adding your links.
+
+---
+
+## Authentication
+
+### Password Auth (Recommended for simplicity)
+
+Choose "Password" during the setup wizard. No secrets or external services needed — just set a password and you're in.
+
+### Google Sign-In
+
+If you prefer Google OAuth:
+
+1. Create an OAuth 2.0 Client in [Google Cloud Console](https://console.cloud.google.com/)
+2. Add your redirect URI (shown in the setup wizard — it's auto-detected, no need to configure it)
+3. Set two secrets:
 
 ```bash
 npx wrangler secret put GOOGLE_CLIENT_ID
-# Paste your Client ID from Step 4
-
 npx wrangler secret put GOOGLE_CLIENT_SECRET
-# Paste your Client Secret from Step 4
-
-npx wrangler secret put GOOGLE_REDIRECT_URI
-# Type: https://yourdomain.com/api/auth/callback
-
-npx wrangler secret put JWT_SECRET
-# Paste a random string — generate one with: openssl rand -base64 32
 ```
 
-### Step 6: Set Your Domain
+4. Redeploy: `npm run deploy`
 
-Open `wrangler.toml` and change the domain to yours:
+> **Note:** `GOOGLE_REDIRECT_URI` and `JWT_SECRET` are auto-generated. You only need the two secrets above.
+
+---
+
+## Custom Domain
+
+By default, your page lives at `your-worker.workers.dev`. To use a custom domain:
+
+1. Add your domain to Cloudflare (DNS managed by Cloudflare)
+2. Edit `wrangler.toml`:
 
 ```toml
 routes = [
@@ -120,25 +120,9 @@ routes = [
 ]
 ```
 
-Your domain must already be added to your Cloudflare account (DNS managed by Cloudflare).
+3. Redeploy: `npm run deploy`
 
-### Step 7: Deploy
-
-```bash
-npm run deploy
-```
-
-That's it! Visit your domain. You should see the start page with a Google sign-in button.
-
-### Step 8: First Login
-
-1. Click the **Google icon** (top right) to sign in
-2. Click the **gear icon** to open Settings
-3. Go to the **Account** tab
-4. Enter your email in **Allowed Emails**
-5. Click **Save**
-
-Now only your email can edit the page. Anyone else will just see a sign-in button (or nothing, if you enable "Hide content when logged out").
+If using Google Sign-In, add the new domain as an authorized redirect URI in Google Cloud Console.
 
 ---
 
@@ -157,26 +141,19 @@ Now when you edit a group and check "Branded", enter the company's domain (e.g.,
 
 ## Running Locally
 
-Want to make changes and test before deploying?
-
 ```bash
 npm run dev
 ```
 
 This starts a local server at `http://localhost:8788`.
 
-For Google sign-in to work locally, create a file called `.dev.vars` in the project root:
+For Google sign-in locally, copy `.dev.vars.example` to `.dev.vars` and fill in your credentials:
 
-```
-GOOGLE_CLIENT_ID=your-client-id-here
-GOOGLE_CLIENT_SECRET=your-client-secret-here
-GOOGLE_REDIRECT_URI=http://localhost:8788/api/auth/callback
-JWT_SECRET=any-random-string-for-local-dev
+```bash
+cp .dev.vars.example .dev.vars
 ```
 
-Then add these to your Google OAuth client:
-- **Authorized JavaScript origins:** `http://localhost:8788`
-- **Authorized redirect URIs:** `http://localhost:8788/api/auth/callback`
+Password auth works locally with no configuration.
 
 ---
 
@@ -195,21 +172,17 @@ Click the gear icon (top right, visible after sign-in) to open Settings:
 
 ## Troubleshooting
 
-**Can't sign in?**
+**Can't sign in with Google?**
 - Make sure your Google OAuth consent screen is set to **Production** (not Testing)
-- Check that your redirect URI matches exactly: `https://yourdomain.com/api/auth/callback`
-- Run `npx wrangler secret list` to verify all 4 secrets are set
+- Check that your redirect URI matches your Workers URL
+- Run `npx wrangler secret list` to verify secrets are set
 
 **Page looks broken or outdated?**
 - Hard refresh: `Cmd+Shift+R` (Mac) or `Ctrl+Shift+R` (Windows)
 - Try incognito/private window
-- On mobile: clear site data in browser settings
 
-**Branded groups not working?**
-- Add your Brandfetch API Key and Client ID in Settings → Account
-
-**Weather shows NYC?**
-- Your browser is blocking location access. Allow it in browser settings.
+**Setup wizard won't appear?**
+- The wizard only shows when no auth is configured. If you already set up Google OAuth or password auth, it won't show again.
 
 ---
 
@@ -220,10 +193,11 @@ public/                     Static files (HTML, CSS, JS)
 worker/index.js             Worker entry point — routes API requests
 functions/                  API route handlers
   lib/                      Shared utilities (JWT, cookies, KV, OAuth)
-  api/auth/                 Google OAuth endpoints
+  api/auth/                 Auth endpoints (Google OAuth + password)
   api/data.js               Read/write app data
   api/suggest.js            Google autocomplete proxy
-  api/auth_setup.js         Manage allowed emails
+  api/setup_status.js       Setup wizard status check
+scripts/setup.js            Interactive setup CLI
 wrangler.toml               Cloudflare Worker config
 ```
 

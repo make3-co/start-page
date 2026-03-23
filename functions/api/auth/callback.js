@@ -23,7 +23,7 @@ export async function onRequestGet(context) {
 
   const { clientId: GOOGLE_CLIENT_ID, clientSecret: GOOGLE_CLIENT_SECRET, redirectUri: GOOGLE_REDIRECT_URI } =
     await getGoogleOAuthCredentials(context);
-  const JWT_SECRET = getJwtSecret(context.env);
+  const JWT_SECRET = await getJwtSecret(context.env);
 
   if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_REDIRECT_URI || !JWT_SECRET) {
     return Response.redirect(`${frontendUrl}?error=oauth_not_configured`, 302);
